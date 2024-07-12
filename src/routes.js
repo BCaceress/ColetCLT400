@@ -1,8 +1,8 @@
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createMaterialBottomTabNavigator } from '@react-navigation/material-bottom-tabs';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import * as React from 'react';
-import Icon from 'react-native-vector-icons/FontAwesome6';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Configuracao from './pages/Configuracao';
 import Login from './pages/Login';
 import Opcoes from './pages/Opcoes';
@@ -13,50 +13,41 @@ import OFVirtual from './pages/TelasOrdensFab/OFVirtual';
 import Processos from './pages/TelasOrdensFab/Processos';
 
 const Stack = createStackNavigator();
-const Tab = createBottomTabNavigator();
+const Tab = createMaterialBottomTabNavigator();
 
 function TabRoutes() {
   return (
-    <Tab.Navigator tabBarOptions={{
-      tabBarStyle: [{ display: 'flex', fontSize: 16 }, null],
-    }}>
-      <Tab.Screen name="DadosGerais" component={DadosGerais} options={{
-        tabBarIcon: () => (
-          <Icon
-            name="file-lines"
-            size={24}
-            color="#000"
-          />
+    <Tab.Navigator
+      initialRouteName="DadosGerais"
+      activeColor="#0D0D0D"
+      inactiveColor="#fff"
+      barStyle={{ backgroundColor: '#09A08D' }}
+    >
+      <Tab.Screen name="Dados Gerais" component={DadosGerais} options={{
+        tabBarLabel: 'Dados Gerais',
+        tabBarIcon: ({ color }) => (
+          <MaterialCommunityIcons name="file-table" color={color} size={27} />
         ),
       }}
       />
       <Tab.Screen name="Processos" component={Processos} options={{
-        tabBarIcon: () => (
-          <Icon
-            name="list-check"
-            size={24}
-            color="#000"
-          />
+        tabBarLabel: 'Processos',
+        tabBarIcon: ({ color }) => (
+          <MaterialCommunityIcons name="table-cog" color={color} size={27} />
         ),
       }}
       />
-      <Tab.Screen name="OFVirtual" component={OFVirtual} options={{
-        tabBarIcon: () => (
-          <Icon
-            name="file-pdf"
-            size={24}
-            color="#000"
-          />
+      <Tab.Screen name="OF Virtual" component={OFVirtual} options={{
+        tabBarLabel: 'OF Virtual',
+        tabBarIcon: ({ color }) => (
+          <MaterialCommunityIcons name="file-document" color={color} size={27} />
         ),
       }}
       />
       <Tab.Screen name="Componentes" component={Componentes} options={{
-        tabBarIcon: () => (
-          <Icon
-            name="screwdriver-wrench"
-            size={24}
-            color="#000"
-          />
+        tabBarLabel: 'Componentes',
+        tabBarIcon: ({ color }) => (
+          <MaterialCommunityIcons name="hammer-screwdriver" color={color} size={27} />
         ),
       }}
       />

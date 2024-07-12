@@ -1,15 +1,17 @@
 
 import React from 'react';
 import {
-    StyleSheet,
-    View
+    SafeAreaView,
+    StyleSheet
 } from 'react-native';
+
 
 
 const Processos = () => {
     return (
-        <View style={styles.container}>
-        </View>
+        <SafeAreaView style={styles.container}>
+
+        </SafeAreaView>
     )
 }
 const styles = StyleSheet.create({

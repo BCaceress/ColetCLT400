@@ -1,12 +1,12 @@
-import React from 'react'
+import React from 'react';
 import {
     Dimensions,
     StyleSheet,
     Text,
     TouchableOpacity,
     View,
-} from 'react-native'
-import Icon from 'react-native-vector-icons/FontAwesome6'
+} from 'react-native';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const { width } = Dimensions.get('window')
 
@@ -16,12 +16,8 @@ const Opcoes = ({ navigation }) => {
             <View style={styles.greenBackground} />
             <View style={[styles.card, { width: width * 0.9 }]}>
                 <View style={styles.headerContainer}>
-                    <Icon
-                        name="user-circle"
-                        style={styles.icon}
-                        size={35}
-                        color="#000"
-                    />
+
+                    <MaterialCommunityIcons name="account-circle-outline" color="#000" size={35} style={styles.icon} />
                     <Text style={styles.title}>Daniel Donaduzzi</Text>
                     <Text style={styles.number}>1234</Text>
                 </View>
@@ -34,7 +30,7 @@ const Opcoes = ({ navigation }) => {
                     onPress={() => navigation.navigate('TelasOrdensFab')}
                     style={[styles.button, { width: width * 0.9 }]}
                 >
-                    <Icon name="clipboard-list" size={45} color="#fff" />
+                    <MaterialCommunityIcons name="clipboard-list-outline" color="#fff" size={45} />
                     <Text style={styles.buttonText}>
                         Ordens de Fabricação e Apontamentos
                     </Text>
@@ -44,14 +40,15 @@ const Opcoes = ({ navigation }) => {
                     <TouchableOpacity
                         style={[styles.button, { width: (width * 0.9) / 2 - 10 }]}
                     >
-                        <Icon name="clipboard" size={45} color="#fff" />
+
+                        <MaterialCommunityIcons name="clipboard-outline" color="#fff" size={45} />
                         <Text style={styles.buttonText}>Pedidos</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
                         style={[styles.button, { width: (width * 0.9) / 2 - 10 }]}
                     >
-                        <Icon name="box" style={styles.icon} size={45} color="#fff" />
+                        <MaterialCommunityIcons name="package-variant" color="#fff" size={45} />
                         <Text style={styles.buttonText}>Produtos e Materiais</Text>
                     </TouchableOpacity>
                 </View>

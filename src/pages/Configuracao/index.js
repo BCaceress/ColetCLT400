@@ -12,8 +12,7 @@ import {
     View,
 } from 'react-native';
 import DeviceInformation from 'react-native-device-info';
-import { Radio } from 'react-native-feather';
-import Icon from 'react-native-vector-icons/FontAwesome5';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import api from '../../services/api.js';
 
 const Configuracao = () => {
@@ -101,7 +100,8 @@ const Configuracao = () => {
                 <View style={styles.contentContainer}>
                     <Text style={styles.content}>{deviceDetails}</Text>
                     <TouchableOpacity onPress={() => copyToClipboard(deviceDetails)}>
-                        <Icon name="copy" style={styles.copyButton} />
+
+                        <MaterialCommunityIcons name="content-copy" style={styles.copyButton} />
                     </TouchableOpacity>
                 </View>
             </View>
@@ -110,7 +110,7 @@ const Configuracao = () => {
                 <View style={styles.contentContainer}>
                     <Text style={styles.content}>{uniqueId}</Text>
                     <TouchableOpacity onPress={() => copyToClipboard(uniqueId)}>
-                        <Icon name="copy" style={styles.copyButton} />
+                        <MaterialCommunityIcons name="content-copy" style={styles.copyButton} />
                     </TouchableOpacity>
                 </View>
             </View>
@@ -129,7 +129,7 @@ const Configuracao = () => {
                 <TouchableOpacity style={styles.buttonTestar} onPress={testarConexao}>
                     {isLoading ? (
                         <ActivityIndicator size="small" color="white" />
-                    ) : (<Radio size={35} color="white" />)}
+                    ) : (<MaterialCommunityIcons name="access-point" color="#fff" size={27} />)}
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.buttonSalvar} onPress={fnSalvar}>
                     <Text style={styles.textSalvar}>Salvar</Text>
