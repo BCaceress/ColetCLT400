@@ -1,11 +1,8 @@
 import React, { useState } from 'react';
 import {
-    SafeAreaView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity
+    StyleSheet
 } from 'react-native';
+import { RNCamera } from 'react-native-camera';
 import api from '../../services/api.js';
 const TelasOrdensFab = ({ navigation }) => {
     const [barcode, setBarcode] = useState('118659.00');
@@ -22,22 +19,21 @@ const TelasOrdensFab = ({ navigation }) => {
             setBarcode('');
         }
     };
+    const handleBarcodeDetected = ({ barcodes }) => {
+        if (barcodes.length > 0) {
+            const scannedData = barcodes[0].data;
+            console.log('Scanned data:', scannedData);
+            // Aqui você pode fazer o que quiser com os dados lidos
+        }
+    };
 
     return (
-        <SafeAreaView style={styles.container}>
-            <TextInput
-                style={styles.input}
-                placeholderTextColor="#000"
-                showSoftInputOnFocus={false}
-                autoFocus={true}
-                placeholder="Inserir etiqueta"
-                value={barcode}
-
+        <View style={{ flex: 1 }}>
+            <RNCamera
+                style={{ flex: 1 }}
+                onBarCodeRead={handleBarcodeDetected}
             />
-            <TouchableOpacity style={styles.button}  onPress={() => {
-            navigation.navigate('Tab');
-          }}><Text style={styles.buttonText}> Pesquisar</Text></TouchableOpacity>
-        </SafeAreaView>
+        </View>
     );
 };
 

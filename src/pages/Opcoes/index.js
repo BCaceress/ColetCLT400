@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
+
 const { width } = Dimensions.get('window')
 
 const Opcoes = ({ navigation }) => {

@@ -4,34 +4,33 @@ import {
   Text,
   View
 } from 'react-native';
-export default function CabecalhoOF({ dados }) {
+import LinearGradient from 'react-native-linear-gradient';
+import ShimmerPlaceHolder from 'react-native-shimmer-placeholder';
+import { useDados } from '../contexts/DadosContext';
 
+export default function CabecalhoOF() {
+  const { dados, isLoading } = useDados();
   return (
     <View style={styles.container}>
-      <Text style={styles.titulo}>Dados Gerais</Text>
-      <View style={styles.card}>
-        <Text style={styles.textCard}>Nro. OF: {dados?.ordem?.numero_ordem}</Text>
-        <Text style={styles.textCard}>Produto: {dados?.ordem?.referencia} - {dados?.ordem?.produto}</Text>
-        <Text style={styles.textCard}>Classificação:</Text>
-        <Text style={styles.textCard}>OF Origem:</Text>
-        <Text style={styles.textCard}>Qtde da OF: {dados?.ordem?.quantidade}</Text>
-      </View>
+      <ShimmerPlaceHolder
+        style={{ width: '100%', height: 130 }}
+        visible={isLoading}
+        LinearGradient={LinearGradient}
+      >
+        <View style={styles.card}>
+          <Text style={styles.textCard}>Nro. OF:<Text style={styles.textNegrito}>{dados?.ordem?.numero_ordem}</Text> </Text>
+          <Text style={styles.textCard}>Produto: {dados?.ordem?.referencia} - {dados?.ordem?.produto}</Text>
+          <Text style={styles.textCard}>Classificação:</Text>
+          <Text style={styles.textCard}>OF Origem:</Text>
+          <Text style={styles.textCard}>Qtde da OF: {dados?.ordem?.quantidade}</Text>
+        </View>
+      </ShimmerPlaceHolder>
     </View>
-
   );
 }
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    padding: 20,
     backgroundColor: '#fff',
-  },
-  titulo: {
-    color: '#000',
-    padding: 8,
-    marginBottom: 12,
-    fontSize: 22,
-    fontWeight: 'bold',
   },
   card: {
     backgroundColor: '#f9f9f9',
@@ -45,7 +44,11 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   textCard: {
-    color: '#000'
+    color: '#000',
+    fontSize: 15
+  },
+  textNegrito: {
+    fontWeight: 'bold'
   }
 })
 
