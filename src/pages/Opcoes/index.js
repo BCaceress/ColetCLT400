@@ -8,7 +8,6 @@ import {
 } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
-
 const { width } = Dimensions.get('window')
 
 const Opcoes = ({ navigation }) => {
@@ -17,7 +16,6 @@ const Opcoes = ({ navigation }) => {
             <View style={styles.greenBackground} />
             <View style={[styles.card, { width: width * 0.9 }]}>
                 <View style={styles.headerContainer}>
-
                     <MaterialCommunityIcons name="account-circle-outline" color="#000" size={35} style={styles.icon} />
                     <Text style={styles.title}>Daniel Donaduzzi</Text>
                     <Text style={styles.number}>1234</Text>
@@ -36,12 +34,10 @@ const Opcoes = ({ navigation }) => {
                         Ordens de Fabricação e Apontamentos
                     </Text>
                 </TouchableOpacity>
-
                 <View style={styles.buttonRow}>
                     <TouchableOpacity
                         style={[styles.button, { width: (width * 0.9) / 2 - 10 }]}
                     >
-
                         <MaterialCommunityIcons name="clipboard-outline" color="#fff" size={45} />
                         <Text style={styles.buttonText}>Pedidos</Text>
                     </TouchableOpacity>
@@ -80,8 +76,9 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         backgroundColor: '#09A08D',
         padding: 60,
-        borderRadius: 5,
+        borderRadius: 8,
         marginVertical: 10,
+
     },
     buttonText: {
         color: '#fff',
@@ -96,36 +93,35 @@ const styles = StyleSheet.create({
     },
     card: {
         position: 'absolute',
-        top: '3%', // Ajuste para posicionar o card corretamente
+        top: '3%',
         backgroundColor: 'white',
-        height: '13%', // Ajuste a altura do card conforme necessário
+        height: '13%',
         borderRadius: 10,
-        // Sombra para o card (opcional)
         shadowColor: '#000',
         shadowOffset: {
             width: 0,
             height: 2,
         },
-        shadowOpacity: 0.25,
-        shadowRadius: 3.84,
+        shadowOpacity: 0.3, // Ajuste a opacidade da sombra
+        shadowRadius: 5, // Ajuste o raio da sombra
         elevation: 5,
     },
     headerContainer: {
         flexDirection: 'row',
         alignItems: 'center',
         alignSelf: 'flex-start',
-        width: '100%', // Garante que o container ocupe toda a largura do card
-        justifyContent: 'space-between', // Alinha os itens nas extremidades do container
-        paddingHorizontal: 20, // Adiciona espaçamento nas laterais
+        width: '100%',
+        justifyContent: 'space-between',
+        paddingHorizontal: 20,
     },
     icon: {
-        margin: 12, // Espaçamento entre o ícone e o título
+        margin: 12,
     },
     title: {
-        fontSize: 20,
+        fontSize: 24,
         fontWeight: 'bold',
         color: '#000',
-        flex: 1, // Permite que o título ocupe o espaço disponível
+        flex: 1,
     },
     number: {
         fontSize: 18,
@@ -134,12 +130,12 @@ const styles = StyleSheet.create({
         color: '#000',
     },
     description: {
-        marginTop: 2, // Espaçamento entre o título e a descrição
+        marginTop: 2,
         marginLeft: 12,
         alignSelf: 'flex-start',
         fontSize: 15,
         color: '#000',
-        paddingHorizontal: 20, // Alinha com o título acima
+        paddingHorizontal: 20,
     },
 })
 

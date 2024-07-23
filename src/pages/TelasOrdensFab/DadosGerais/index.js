@@ -6,11 +6,8 @@ import {
 } from 'react-native';
 import CabecalhoOF from '../../../components/CabecalhoOF';
 import { DadosProvider } from '../../../contexts/DadosContext';
-
 const DadosGerais = () => {
-
-
-
+  
     return (
         <SafeAreaView style={styles.container}>
             <Text style={styles.titulo}>Dados Gerais</Text>

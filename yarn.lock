@@ -6617,6 +6617,11 @@ react-native-gradle-plugin@^0.70.2, react-native-gradle-plugin@^0.70.3:
   resolved "https://registry.npmjs.org/react-native-gradle-plugin/-/react-native-gradle-plugin-0.70.3.tgz"
   integrity sha512-oOanj84fJEXUg9FoEAQomA8ISG+DVIrTZ3qF7m69VQUJyOGYyDZmPqKcjvRku4KXlEH6hWO9i4ACLzNBh8gC0A==
 
+react-native-keyboard-aware-scrollview@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.npmjs.org/react-native-keyboard-aware-scrollview/-/react-native-keyboard-aware-scrollview-2.1.0.tgz"
+  integrity sha512-XfWozWFPhdecfxN+wuqERX3mCGDrAim5siC6TWg3Qw7wK/zlwIwe1UIsHDNOQCzf9oIh0SkZXvoOFsMrnyIVmQ==
+
 react-native-linear-gradient@^2.8.3, react-native-linear-gradient@>=2.4.0:
   version "2.8.3"
   resolved "https://registry.npmjs.org/react-native-linear-gradient/-/react-native-linear-gradient-2.8.3.tgz"
@@ -6792,7 +6797,7 @@ react-native-windows@~0.70.3:
     whatwg-fetch "^3.0.0"
     ws "^6.1.4"
 
-react-native@*, "react-native@^0.0.0-0 || >=0.60 <1.0", react-native@>=0.46, react-native@>=0.57, react-native@>=0.61.4, react-native@~0.70.3, react-native@0.74.3:
+react-native@*, "react-native@^0.0.0-0 || >=0.60 <1.0", react-native@>=0.25.1, react-native@>=0.46, react-native@>=0.57, react-native@>=0.61.4, react-native@~0.70.3, react-native@0.74.3:
   version "0.74.3"
   dependencies:
     "@jest/create-cache-key-function" "^29.6.3"
@@ -6854,7 +6859,7 @@ react-test-renderer@18.2.0:
     react-shallow-renderer "^16.15.0"
     scheduler "^0.23.0"
 
-react@*, "react@^16.0.0 || ^17.0.0 || ^18.0.0", "react@^16.8.0 || ^17.0.0 || ^18.0.0", react@^18.0.0, react@^18.2.0, react@^18.3.1, react@>=16.0, react@>=16.13.1, react@>=16.3.0, react@>=16.8, react@>=17.0.0, "react@16.9.0 || 16.11.0 || 16.13.1 || 17.0.1 || 17.0.2 || 18.0.0 || 18.1.0 || 18.2.0", react@18.0.0, react@18.1.0, react@18.2.0:
+react@*, "react@^16.0.0 || ^17.0.0 || ^18.0.0", "react@^16.8.0 || ^17.0.0 || ^18.0.0", react@^18.0.0, react@^18.2.0, react@^18.3.1, react@>=0.14.5, react@>=16.0, react@>=16.13.1, react@>=16.3.0, react@>=16.8, react@>=17.0.0, "react@16.9.0 || 16.11.0 || 16.13.1 || 17.0.1 || 17.0.2 || 18.0.0 || 18.1.0 || 18.2.0", react@18.0.0, react@18.1.0, react@18.2.0:
   version "18.2.0"
   dependencies:
     loose-envify "^1.1.0"

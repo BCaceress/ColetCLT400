@@ -26,7 +26,6 @@ const Configuracao = () => {
         const fetchData = async () => {
             try {
                 const savedConnection = await AsyncStorage.getItem('@MyApp:connection');
-                const leTodasEtiquetas = await AsyncStorage.getItem('@MyApp:leTodas');
                 setConnection(savedConnection || '');
             } catch (error) {
                 console.error('Erro ao recuperar os dados:', error);

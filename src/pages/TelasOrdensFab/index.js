@@ -1,15 +1,15 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import {
   StyleSheet,
-  View,
   Text,
   TextInput,
   TouchableOpacity,
+  View,
 } from 'react-native';
 //import { RNCamera } from 'react-native-camera';
 import api from '../../services/api.js';
-const TelasOrdensFab = ({navigation}) => {
-  const [barcode, setBarcode] = useState('118659.00');
+const TelasOrdensFab = ({ navigation }) => {
+  const [barcode, setBarcode] = useState('393282.00');
 
   const fnPesquisar = async () => {
     try {
@@ -23,8 +23,10 @@ const TelasOrdensFab = ({navigation}) => {
       setBarcode('');
     }
   };
-  const teste = async () => {
-    navigation.navigate('Tab');
+  const teste = () => {
+
+    navigation.navigate('Tab', { barcode: barcode });
+    console.log('testando valor: ' + barcode)
   };
 
   return (
@@ -32,7 +34,7 @@ const TelasOrdensFab = ({navigation}) => {
       <TextInput
         style={styles.input}
         placeholder="Digite algo"
-        value="118659.00"
+        value="393282.00"
       />
       <TouchableOpacity style={styles.button} onPress={teste}>
         <Text style={styles.buttonText}>OK</Text>

@@ -15,7 +15,6 @@ import Processos from './pages/TelasOrdensFab/Processos';
 const Stack = createStackNavigator();
 const Tab = createMaterialBottomTabNavigator();
 
-
 function TabRoutes() {
   return (
     <Tab.Navigator
@@ -96,7 +95,10 @@ export default function Routes() {
             headerTitle: 'Ordens de Fabricação e Apontamentos',
           }}
         />
-        <Stack.Screen name="Tab" component={TabRoutes} />
+        <Stack.Screen name="Tab" component={TabRoutes}
+          options={({ route }) => ({
+            headerTitle: 'Ordem de Fabricação: ' + route.params?.barcode || 'OF não encontrada',
+          })} />
       </Stack.Navigator>
     </NavigationContainer>
   );

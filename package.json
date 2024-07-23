@@ -27,6 +27,7 @@
     "react-native-device-info": "^11.1.0",
     "react-native-feather": "^1.1.2",
     "react-native-gesture-handler": "^2.17.1",
+    "react-native-keyboard-aware-scrollview": "^2.1.0",
     "react-native-linear-gradient": "^2.8.3",
     "react-native-loading-spinner-overlay": "^3.0.1",
     "react-native-paper": "^5.12.3",

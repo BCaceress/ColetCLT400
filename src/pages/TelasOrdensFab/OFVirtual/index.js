@@ -1,14 +1,16 @@
-import React, {useState} from 'react';
-import {StyleSheet, Dimensions, Text, View} from 'react-native';
-import Pdf from 'react-native-pdf';
-import {Slider} from '@react-native-assets/slider';
 import _ from 'lodash';
+import React, { useEffect, useState } from 'react';
+import { Dimensions, StyleSheet, Text, View } from 'react-native';
+import Pdf from 'react-native-pdf';
 
 export default function OFVirtual() {
-  const source = require('../../../assets/thereactnativebook-sample.pdf');
+  //const source = require('../../../assets/10252A.pdf');
+  //OF981883
+  const source = { uri: 'http://10.0.0.197/pdfs/10252A.pdf', cache: true };
 
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(null);
+  const [fileExists, setFileExists] = useState(true);
   const pdfRef = React.useRef();
 
   const throttleOnSliderValueChange = React.useCallback(
@@ -22,7 +24,7 @@ export default function OFVirtual() {
     pdfRef.current && pdfRef.current.setPage(Math.floor(value));
   };
 
-  const CustomThumb = ({value}) => {
+  const CustomThumb = ({ value }) => {
     return (
       <View style={styles.thumbContainer}>
         <View style={styles.thumbTextContainer}>
@@ -31,25 +33,49 @@ export default function OFVirtual() {
       </View>
     );
   };
+
+  // Função para verificar se o arquivo existe
+  const checkFileExists = async () => {
+    try {
+      const response = await fetch(source.uri);
+      if (!response.ok) {
+        setFileExists(false);
+      }
+    } catch (error) {
+      setFileExists(false);
+    }
+  };
+
+  useEffect(() => {
+    checkFileExists();
+  }, []);
+
   return (
     <View style={styles.container}>
-      <Pdf
-        trustAllCerts={false}
-        source={source}
-        onLoadComplete={(numberOfPages, filePath) => {
-          setTotalPages(numberOfPages);
-        }}
-        onPageChanged={(page, numberOfPages) => {
-          setCurrentPage(page);
-        }}
-        onError={error => {
-          console.log(error);
-        }}
-        onPressLink={uri => {
-          console.log(`Link pressed: ${uri}`);
-        }}
-        style={styles.pdf}
-      />
+      {fileExists ? (
+        <Pdf
+          trustAllCerts={false}
+          source={source}
+          onLoadComplete={(numberOfPages, filePath) => {
+            setTotalPages(numberOfPages);
+          }}
+          onPageChanged={(page, numberOfPages) => {
+            setCurrentPage(page);
+          }}
+          onError={error => {
+            console.log(error);
+          }}
+          onPressLink={uri => {
+            console.log(`Link pressed: ${uri}`);
+          }}
+          style={styles.pdf}
+        />
+      ) : (
+
+        <Text style={styles.notFoundText}>Arquivo não encontrado.</Text>
+
+      )}
+      {/* 
       <View style={styles.verticalSliderContainer}>
         <Slider
           value={currentPage}
@@ -57,7 +83,7 @@ export default function OFVirtual() {
           maximumValue={totalPages}
           step={0}
           minimumTrackTintColor="white"
-          maximumTrackTintColor="white"
+          maximumTrackTintColor="#09A08D"
           vertical={true}
           slideOnTap={true}
           onValueChange={throttleOnSliderValueChange}
@@ -65,6 +91,7 @@ export default function OFVirtual() {
           CustomThumb={CustomThumb}
         />
       </View>
+      */}
     </View>
   );
 }
@@ -75,13 +102,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 55,
+    marginTop: 25,
   },
 
   pdf: {
     flex: 1,
     width: Dimensions.get('window').width,
-    height: Dimensions.get('window').height,
+    height: '100%',
   },
   verticalSliderContainer: {
     justifyContent: 'center',
@@ -104,4 +131,10 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
   },
+  notFoundContainer: {
+
+  },
+  notFoundText: {
+    color: "#000"
+  }
 });

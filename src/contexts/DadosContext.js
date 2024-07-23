@@ -14,7 +14,7 @@ export function DadosProvider({ children }) {
       try {
         const apiInstance = await api();
         const response = await apiInstance.get(
-          `/ordens?evento=20&numeroOF=118659.00`
+          `/ordens?evento=20&numeroOF=393282.00`
         );
         setDados(response.data);
         setProcessosLista(response.data.ordem.processos);
