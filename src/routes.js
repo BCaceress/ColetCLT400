@@ -4,8 +4,8 @@ import { createStackNavigator } from '@react-navigation/stack';
 import * as React from 'react';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Configuracao from './pages/Configuracao';
+import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
-import Opcoes from './pages/Opcoes';
 import TelasOrdensFab from './pages/TelasOrdensFab';
 import Componentes from './pages/TelasOrdensFab/Componentes';
 import DadosGerais from './pages/TelasOrdensFab/DadosGerais';
@@ -82,10 +82,10 @@ export default function Routes() {
           }}
         />
         <Stack.Screen
-          name="Opcoes"
-          component={Opcoes}
+          name="Dashboard"
+          component={Dashboard}
           options={{
-            headerTitle: 'Opções',
+            headerTitle: 'Dashboard',
           }}
         />
         <Stack.Screen

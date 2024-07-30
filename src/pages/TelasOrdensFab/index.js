@@ -4,41 +4,41 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from 'react-native';
-//import { RNCamera } from 'react-native-camera';
-import api from '../../services/api.js';
+import CameraBarcode from '../../components/CameraBarcode';
+
 const TelasOrdensFab = ({ navigation }) => {
+
   const [barcode, setBarcode] = useState('393282.00');
+  const [showCamera, setShowCamera] = useState(false);
 
-  const fnPesquisar = async () => {
-    try {
-      const apiInstance = await api();
-      const response = await apiInstance.get(
-        `/ordens?evento=20&numeroOF=${barcode}`,
-      );
-      console.log(response.data);
-    } catch (error) {
-      console.error('Erro ao obter dados da API:', error);
-      setBarcode('');
-    }
+  const toggleCamera = () => {
+    setShowCamera(!showCamera);
   };
-  const teste = () => {
 
+  const teste = () => {
     navigation.navigate('Tab', { barcode: barcode });
-    console.log('testando valor: ' + barcode)
   };
 
   return (
     <View style={styles.container}>
-      <TextInput
-        style={styles.input}
-        placeholder="Digite algo"
-        value="393282.00"
-      />
-      <TouchableOpacity style={styles.button} onPress={teste}>
-        <Text style={styles.buttonText}>OK</Text>
-      </TouchableOpacity>
+      {showCamera ? (<CameraBarcode  />)
+        : (
+          <View style={styles.container}>
+            <TextInput
+              style={styles.input}
+              placeholder="Digite algo"
+              value="393282.00"
+            />
+            <TouchableOpacity style={styles.button} onPress={teste}>
+              <Text style={styles.buttonText}>OK</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.button} onPress={toggleCamera}>
+              <Text style={styles.buttonText}>Exibir/Esconder Câmera</Text>
+            </TouchableOpacity>
+          </View>
+        )}
     </View>
   );
 };

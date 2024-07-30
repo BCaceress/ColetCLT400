@@ -1,3 +1,4 @@
+import { useIsFocused } from "@react-navigation/native";
 import React, { useEffect, useState } from 'react';
 import {
   Image,
@@ -15,7 +16,6 @@ import DeviceInformation from 'react-native-device-info';
 import api from '../../services/api';
 
 const Login = ({ navigation }) => {
-  const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
   const [isSharedUser, setIsSharedUser] = useState(false)
   const [acessoApp, setAcessoApp] = useState(false)
   const [infoDispositivo, setInfoDispositivo] = useState([])
@@ -26,8 +26,19 @@ const Login = ({ navigation }) => {
     usuario: usuario,
     senha_cripto: encode(senha),
   };
+  const isFocused = useIsFocused();
 
   useEffect(() => {
+    if (isFocused) {
+      getIDeAPI();
+    }
+  }, [isFocused]);
+
+  useEffect(() => {
+
+  }, []);
+
+  const getIDeAPI = async () => {
     const fetchData = async () => {
       try {
         // ID ÚNICO
@@ -47,7 +58,7 @@ const Login = ({ navigation }) => {
       }
     };
     fetchData();
-  }, []);
+  };
 
   const acessoLogin = async () => {
     try {
@@ -56,8 +67,8 @@ const Login = ({ navigation }) => {
         `/login`, data,
       );
       if (response.status === 200) {
-        console.log('Login bem-sucedido! Token:', response.data.token);
-        navigation.navigate('Opcoes');
+        console.log('Login bem-sucedido! Token:', response.data.usuario);
+        navigation.navigate('Dashboard', { usuario: response.data.usuario });
       } else {
         alert('Erro ao fazer login. Verifique suas credenciais.');
       }

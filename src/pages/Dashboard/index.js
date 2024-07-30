@@ -10,14 +10,14 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 
 const { width } = Dimensions.get('window')
 
-const Opcoes = ({ navigation }) => {
+const Dashboard = ({ navigation, route }) => {
     return (
         <View style={styles.container}>
             <View style={styles.greenBackground} />
             <View style={[styles.card, { width: width * 0.9 }]}>
                 <View style={styles.headerContainer}>
                     <MaterialCommunityIcons name="account-circle-outline" color="#000" size={35} style={styles.icon} />
-                    <Text style={styles.title}>Daniel Donaduzzi</Text>
+                    <Text style={styles.title}>{route.params?.usuario}</Text>
                     <Text style={styles.number}>1234</Text>
                 </View>
                 <Text style={styles.description}>
@@ -139,4 +139,4 @@ const styles = StyleSheet.create({
     },
 })
 
-export default Opcoes
+export default Dashboard
