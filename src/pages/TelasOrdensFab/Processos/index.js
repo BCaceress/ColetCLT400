@@ -8,13 +8,13 @@ import CabecalhoOF from '../../../components/CabecalhoOF';
 import ProcessosLista from '../../../components/ProcessosLista';
 import { DadosProvider } from '../../../contexts/DadosContext';
 
-const Processos = () => {
-
+const Processos = ({ route }) => {
+    const { valueOF } = route.params;
     return (
         <SafeAreaView style={styles.container}>
             <Text style={styles.titulo}>Processos</Text>
-            <DadosProvider>
-                <CabecalhoOF />
+            <DadosProvider valueOF={valueOF}>
+                <CabecalhoOF valueOF={valueOF} />
                 <Text style={styles.titulo}>Processos da Ordem</Text>
                 <ProcessosLista />
             </DadosProvider>

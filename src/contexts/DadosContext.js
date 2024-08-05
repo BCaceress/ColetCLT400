@@ -1,20 +1,18 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import api from '../services/api';
-
 const DadosContext = createContext();
 
-export function DadosProvider({ children }) {
+export function DadosProvider({ children, valueOF }) {
   const [dados, setDados] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [processosLista, setProcessosLista] = useState([]);
-
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const apiInstance = await api();
         const response = await apiInstance.get(
-          `/ordens?evento=20&numeroOF=393282.00`
+          `/ordens?evento=20&numeroOF=${valueOF}`
         );
         setDados(response.data);
         setProcessosLista(response.data.ordem.processos);

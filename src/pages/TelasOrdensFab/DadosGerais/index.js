@@ -1,4 +1,3 @@
-
 import React from 'react';
 import {
     SafeAreaView,
@@ -6,13 +5,13 @@ import {
 } from 'react-native';
 import CabecalhoOF from '../../../components/CabecalhoOF';
 import { DadosProvider } from '../../../contexts/DadosContext';
-const DadosGerais = () => {
-  
+const DadosGerais = ({ route }) => {
+    const { valueOF } = route.params;
     return (
         <SafeAreaView style={styles.container}>
             <Text style={styles.titulo}>Dados Gerais</Text>
-            <DadosProvider>
-                <CabecalhoOF />
+            <DadosProvider valueOF={valueOF} >
+                <CabecalhoOF valueOF={valueOF} />
             </DadosProvider>
         </SafeAreaView>
     );

@@ -1,14 +1,9 @@
 import React from 'react';
-import {
-    Dimensions,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
-} from 'react-native';
+import { Dimensions, StyleSheet, Text, View } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import DashboardButton from '../../components/DashboardButton'; // Ajuste o caminho conforme necessário
 
-const { width } = Dimensions.get('window')
+const { width } = Dimensions.get('window');
 
 const Dashboard = ({ navigation, route }) => {
     return (
@@ -21,38 +16,29 @@ const Dashboard = ({ navigation, route }) => {
                     <Text style={styles.number}>1234</Text>
                 </View>
                 <Text style={styles.description}>
-                    Bem-vindo a Colet Sistemas ...dsadasdygasygdsaygdsadgygdsad
+                    Bem-vindo ao Colet Sistemas! Aqui você pode acompanhar suas ordens, gerenciar tarefas e acessar relatórios. Explore e mantenha-se atualizado!
                 </Text>
             </View>
-            <View style={styles.container2}>
-                <TouchableOpacity
+            <View style={styles.containerButton}>
+                <DashboardButton
                     onPress={() => navigation.navigate('TelasOrdensFab')}
-                    style={[styles.button, { width: width * 0.9 }]}
-                >
-                    <MaterialCommunityIcons name="clipboard-list-outline" color="#fff" size={45} />
-                    <Text style={styles.buttonText}>
-                        Ordens de Fabricação e Apontamentos
-                    </Text>
-                </TouchableOpacity>
-                <View style={styles.buttonRow}>
-                    <TouchableOpacity
-                        style={[styles.button, { width: (width * 0.9) / 2 - 10 }]}
-                    >
-                        <MaterialCommunityIcons name="clipboard-outline" color="#fff" size={45} />
-                        <Text style={styles.buttonText}>Pedidos</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                        style={[styles.button, { width: (width * 0.9) / 2 - 10 }]}
-                    >
-                        <MaterialCommunityIcons name="package-variant" color="#fff" size={45} />
-                        <Text style={styles.buttonText}>Produtos e Materiais</Text>
-                    </TouchableOpacity>
-                </View>
+                    title="Ordens de Fabricação e Apontamentos"
+                    imageSource={require('../../assets/ordemFab.png')}
+                />
+                <DashboardButton
+                    title="Produtos e Materiais"
+                    imageSource={require('../../assets/prodMateriais.png')}
+                    backgroundColor="#09A08D"
+                    reverse
+                />
+                <DashboardButton
+                    title="Pedidos"
+                    imageSource={require('../../assets/pedidos.png')}
+                />
             </View>
         </View>
-    )
-}
+    );
+};
 
 const styles = StyleSheet.create({
     container: {
@@ -60,50 +46,24 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'flex-start',
     },
-    container2: {
-        flex: 2,
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: 20,
-    },
-    buttonRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        width: width * 0.9,
-    },
-    button: {
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#09A08D',
-        padding: 60,
-        borderRadius: 8,
-        marginVertical: 10,
-
-    },
-    buttonText: {
-        color: '#fff',
-        marginTop: 10,
-        fontSize: 18,
-        fontWeight: 'bold',
-    },
     greenBackground: {
         backgroundColor: '#09A08D',
         width: '100%',
-        height: '10%', // Ajuste a altura conforme necessário
+        height: '10%',
     },
     card: {
         position: 'absolute',
-        top: '3%',
+        top: '2%',
         backgroundColor: 'white',
-        height: '13%',
+        height: '15%',
         borderRadius: 10,
         shadowColor: '#000',
         shadowOffset: {
             width: 0,
             height: 2,
         },
-        shadowOpacity: 0.3, // Ajuste a opacidade da sombra
-        shadowRadius: 5, // Ajuste o raio da sombra
+        shadowOpacity: 0.3,
+        shadowRadius: 5,
         elevation: 5,
     },
     headerContainer: {
@@ -130,13 +90,19 @@ const styles = StyleSheet.create({
         color: '#000',
     },
     description: {
-        marginTop: 2,
         marginLeft: 12,
         alignSelf: 'flex-start',
         fontSize: 15,
         color: '#000',
         paddingHorizontal: 20,
     },
-})
+    containerButton: {
+        flex: 2,
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 20,
+        marginTop: 20
+    },
+});
 
-export default Dashboard
+export default Dashboard;

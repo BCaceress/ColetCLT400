@@ -1,7 +1,6 @@
-
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Clipboard from '@react-native-clipboard/clipboard';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
     ActivityIndicator,
     Alert,
@@ -17,79 +16,58 @@ import api from '../../services/api.js';
 
 const Configuracao = () => {
     const [connection, setConnection] = useState('');
+    const [postos, setPostos] = useState(["INJ01", "INJ02", "INJ03", "INJ04", "INJ05", "INJ08", "INJ08", "INJ08"]);
     const [isLoading, setIsLoading] = useState(false);
-    const [deviceDetails, setDeviceDetails] = React.useState('')
-    const [uniqueId, setUniqueId] = React.useState('')
+    const [deviceDetails, setDeviceDetails] = useState('');
+    const [uniqueId, setUniqueId] = useState('');
 
     useEffect(() => {
-        // Recupera os valores do AsyncStorage
         const fetchData = async () => {
             try {
                 const savedConnection = await AsyncStorage.getItem('@MyApp:connection');
                 setConnection(savedConnection || '');
+                const device = await DeviceInformation.getDeviceName();
+                const id = await DeviceInformation.getUniqueId();
+                setDeviceDetails(device);
+                setUniqueId(id);
             } catch (error) {
                 console.error('Erro ao recuperar os dados:', error);
             }
         };
-
         fetchData();
     }, []);
 
-    const copyToClipboard = (value) => {
-        Clipboard.setString(value)
-    }
+    const copyToClipboard = useCallback((value) => {
+        Clipboard.setString(value);
+    }, []);
 
-    const getDeviceInfo = async () => {
-        let device = await DeviceInformation.getDeviceName()
-        let uniqueId = await DeviceInformation.getUniqueId()
-        setDeviceDetails(device)
-        setUniqueId(uniqueId)
-    }
-    getDeviceInfo()
-
-    const fnSalvar = async () => {
+    const saveConfig = useCallback(async () => {
         try {
-            // Salva os dados no AsyncStorage
             await AsyncStorage.setItem('@MyApp:connection', connection);
-            Alert.alert('Sucesso', 'Configurações salvas com sucesso!', [
-                { text: 'OK' },
-            ]);
+            Alert.alert('Sucesso', 'Configurações salvas com sucesso!');
         } catch (error) {
-            Alert.alert('Erro', 'Ocorreu um erro ao salvar as configurações.', [
-                { text: 'OK' },
-            ]);
+            Alert.alert('Erro', 'Ocorreu um erro ao salvar as configurações.');
         }
-    };
+    }, [connection]);
 
-    const testarConexao = async () => {
+    const testConnection = useCallback(async () => {
         try {
             setIsLoading(true);
-            // Salva os valores no AsyncStorage
-            await Promise.all([
-                AsyncStorage.setItem('@MyApp:connection', connection),
-            ]);
-            // Faz a chamada à API
+            await AsyncStorage.setItem('@MyApp:connection', connection);
             const apiInstance = await api();
             const response = await apiInstance.get('/parametros?chave=NOME-EMP&sistema=CLT&estabelecimento=1');
-            if (response.status === 200) {
-                if (response.data && response.data.valor) {
-                    Alert.alert('Sucesso', 'Conexão com API realizada!', [{ text: 'OK' }]);
-                    setIsLoading(false);
-                } else {
-                    Alert.alert('Erro', 'Dados inválidos na resposta da API.', [{ text: 'OK' }]);
-                    setIsLoading(false);
-                }
+            if (response.status === 200 && response.data?.valor) {
+                Alert.alert('Sucesso', 'Conexão com API realizada!');
             } else {
-                Alert.alert('Erro', 'Favor verificar a conexão API.', [{ text: 'OK' }]);
-                setIsLoading(false);
+                Alert.alert('Erro', 'Dados inválidos na resposta da API.');
             }
         } catch (error) {
-            Alert.alert('Erro', 'Ocorreu um erro na chamada da API.', [{ text: 'OK' }]);
-            console.error(error)
+            Alert.alert('Erro', 'Ocorreu um erro na chamada da API.');
+            console.error(error);
+        } finally {
             setIsLoading(false);
         }
-    };
-
+    }, [connection]);
 
     return (
         <View style={styles.container}>
@@ -99,7 +77,6 @@ const Configuracao = () => {
                 <View style={styles.contentContainer}>
                     <Text style={styles.content}>{deviceDetails}</Text>
                     <TouchableOpacity onPress={() => copyToClipboard(deviceDetails)}>
-
                         <MaterialCommunityIcons name="content-copy" style={styles.copyButton} />
                     </TouchableOpacity>
                 </View>
@@ -113,6 +90,18 @@ const Configuracao = () => {
                     </TouchableOpacity>
                 </View>
             </View>
+            <Text style={styles.titulo}>Postos habilitados</Text>
+            <View style={styles.card}>
+                <View style={styles.contentContainer}>
+                    <View style={styles.badgesContainer}>
+                        {postos.map((posto, index) => (
+                            <View key={index} style={styles.badge}>
+                                <Text style={styles.badgeText}>{posto}</Text>
+                            </View>
+                        ))}
+                    </View>
+                </View>
+            </View>
             <Text style={styles.titulo}>Configurações do sistema</Text>
             <View style={styles.card}>
                 <Text style={styles.description}>Conexão API:</Text>
@@ -121,22 +110,23 @@ const Configuracao = () => {
                     placeholder="Digite a conexão"
                     placeholderTextColor={'#ccc'}
                     value={connection}
-                    onChangeText={text => setConnection(text)}
+                    onChangeText={setConnection}
                 />
             </View>
             <View style={styles.viewButton}>
-                <TouchableOpacity style={styles.buttonTestar} onPress={testarConexao}>
+                <TouchableOpacity style={styles.buttonTestar} onPress={testConnection}>
                     {isLoading ? (
                         <ActivityIndicator size="small" color="white" />
                     ) : (<MaterialCommunityIcons name="access-point" color="#fff" size={27} />)}
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.buttonSalvar} onPress={fnSalvar}>
+                <TouchableOpacity style={styles.buttonSalvar} onPress={saveConfig}>
                     <Text style={styles.textSalvar}>Salvar</Text>
                 </TouchableOpacity>
             </View>
         </View>
-    )
-}
+    );
+};
+
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -179,14 +169,27 @@ const styles = StyleSheet.create({
         marginRight: 10,
         color: '#000',
     },
-    infoText: {
-        fontSize: 16,
-    },
     copyButton: {
-        backgroundColor: '#49BC99',
+        backgroundColor: '#09A08D',
         padding: 9,
         borderRadius: 5,
-        fontSize: 18,
+        fontSize: 17,
+        color: '#fff'
+    },
+    badge: {
+        backgroundColor: '#09A08D',
+        borderRadius: 15,
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        margin: 2,
+    },
+    badgeText: {
+        color: 'white',
+        fontWeight: 'bold',
+    },
+    badgesContainer: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
     },
     inputConexao: {
         height: 40,
@@ -223,6 +226,6 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
         fontWeight: 'bold',
     },
-})
+});
 
-export default Configuracao
+export default Configuracao;

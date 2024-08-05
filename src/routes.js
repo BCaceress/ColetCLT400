@@ -15,7 +15,8 @@ import Processos from './pages/TelasOrdensFab/Processos';
 const Stack = createStackNavigator();
 const Tab = createMaterialBottomTabNavigator();
 
-function TabRoutes() {
+function TabRoutes({ route }) {
+  const { valueOF } = route.params;
   return (
     <Tab.Navigator
       initialRouteName="DadosGerais"
@@ -29,6 +30,7 @@ function TabRoutes() {
           <MaterialCommunityIcons name="file-table" color={color} size={27} />
         ),
       }}
+        initialParams={{ valueOF }}
       />
       <Tab.Screen name="Processos" component={Processos} options={{
         tabBarLabel: 'Processos',
@@ -36,6 +38,7 @@ function TabRoutes() {
           <MaterialCommunityIcons name="table-cog" color={color} size={27} />
         ),
       }}
+        initialParams={{ valueOF }}
       />
       <Tab.Screen name="OF Virtual" component={OFVirtual} options={{
         tabBarLabel: 'OF Virtual',
@@ -97,7 +100,7 @@ export default function Routes() {
         />
         <Stack.Screen name="Tab" component={TabRoutes}
           options={({ route }) => ({
-            headerTitle: 'Ordem de Fabricação: ' + route.params?.barcode || 'OF não encontrada',
+            headerTitle: 'Ordem de Fabricação: ' + route.params?.valueOF || 'OF não encontrada',
           })} />
       </Stack.Navigator>
     </NavigationContainer>
