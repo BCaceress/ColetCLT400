@@ -1,5 +1,6 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useIsFocused } from "@react-navigation/native";
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   Image,
   Keyboard,
@@ -15,17 +16,76 @@ import {
 import DeviceInformation from 'react-native-device-info';
 import api from '../../services/api';
 
-const Login = ({ navigation }) => {
-  const [isSharedUser, setIsSharedUser] = useState(false)
-  const [acessoApp, setAcessoApp] = useState(false)
-  const [infoDispositivo, setInfoDispositivo] = useState([])
-  const [usuario, setUsuario] = useState('duploz')
-  const [senha, setSenha] = useState('yp0p0th@m')
+// Hook personalizado para obter e definir informações do dispositivo
+const useDeviceInfo = () => {
+  const [infoDispositivo, setInfoDispositivo] = useState({});
+  const [acessoApp, setAcessoApp] = useState(false);
 
-  const data = {
-    usuario: usuario,
-    senha_cripto: encode(senha),
-  };
+  const getIDeAPI = useCallback(async () => {
+    try {
+      const uniqueId = await DeviceInformation.getUniqueId();
+      const apiInstance = await api();
+      const response = await apiInstance.get(`/dispositivo?id=${uniqueId}`);
+      setInfoDispositivo(response.data);
+      setAcessoApp(response.data.situacao.trim() === "A");
+    } catch (error) {
+      console.error('Erro ao obter dados da API:', error);
+      setAcessoApp(false);
+    }
+  }, []);
+
+  return { infoDispositivo, acessoApp, getIDeAPI };
+};
+
+// Hook personalizado para login
+const useLogin = (usuario, senha) => {
+  const acessoLogin = useCallback(async (navigation) => {
+    const data = {
+      usuario,
+      senha_cripto: encode(senha),
+    };
+    try {
+      const apiInstance = await api();
+      const response = await apiInstance.post(`/login`, data);
+      if (response.status === 200) {
+        await AsyncStorage.setItem('@MyApp:permissao', response.data.permissao);
+        navigation.navigate('Dashboard', { usuario: response.data.usuario });
+      } else {
+        alert('Erro ao fazer login. Verifique suas credenciais.');
+      }
+    } catch (error) {
+      alert('Erro ao se conectar à API. Verifique sua conexão de rede.');
+    }
+  }, [usuario, senha]);
+
+  return acessoLogin;
+};
+
+// Função para criptografar a senha
+const encode = (str) => {
+  const chave = Math.floor(Math.random() * 255);
+  const hexa = [];
+  let resultado = '';
+
+  hexa.push((chave >> 4).toString(16).toUpperCase());
+  hexa.push((chave & 0xF).toString(16).toUpperCase());
+  resultado += hexa.join('');
+
+  for (let i = 0; i < str.length; i++) {
+    const convertido = str.charCodeAt(i) ^ chave;
+    hexa[0] = (convertido >> 4).toString(16).toUpperCase();
+    hexa[1] = (convertido & 0xF).toString(16).toUpperCase();
+    resultado += hexa.join('');
+  }
+  return resultado;
+};
+
+const Login = ({ navigation }) => {
+  const [isSharedUser, setIsSharedUser] = useState(false);
+  const [usuario, setUsuario] = useState('duploz');
+  const [senha, setSenha] = useState('yp0p0th@m');
+  const { infoDispositivo, acessoApp, getIDeAPI } = useDeviceInfo();
+  const acessoLogin = useLogin(usuario, senha);
   const isFocused = useIsFocused();
 
   useEffect(() => {
@@ -34,98 +94,39 @@ const Login = ({ navigation }) => {
     }
   }, [isFocused]);
 
-  useEffect(() => {
-
-  }, []);
-
-  const getIDeAPI = async () => {
-    const fetchData = async () => {
-      try {
-        // ID ÚNICO
-        const uniqueId = await DeviceInformation.getUniqueId();
-        // Conexão API
-        const apiInstance = await api();
-        const response = await apiInstance.get(`/dispositivo?id=${uniqueId}`);
-        setInfoDispositivo(response.data);
-        if (response.data.situacao.trim() === "A") {
-          setAcessoApp(true);
-        } else {
-          setAcessoApp(false);
-        }
-      } catch (error) {
-        console.error('Erro ao obter dados da API:', error);
-        setAcessoApp(false)
-      }
-    };
-    fetchData();
-  };
-
-  const acessoLogin = async () => {
-    try {
-      const apiInstance = await api();
-      const response = await apiInstance.post(
-        `/login`, data,
-      );
-      if (response.status === 200) {
-        console.log('Login bem-sucedido! Token:', response.data.usuario);
-        navigation.navigate('Dashboard', { usuario: response.data.usuario });
-      } else {
-        alert('Erro ao fazer login. Verifique suas credenciais.');
-      }
-    } catch (error) {
-      alert('Erro ao se conectar à API. Verifique sua conexão de rede.');
-    }
-  };
-
-  function encode(str) {
-    let chave, convertido;
-    let resultado = '';
-    const hexa = [];
-    let numero = 0;
-
-    while (numero < 1) {
-      numero = Math.floor(Math.random() * 255);
-    }
-    chave = numero;
-    hexa.push((chave >> 4).toString(16).toUpperCase());
-    hexa.push((chave & 0xF).toString(16).toUpperCase());
-    resultado += hexa.join('');
-
-    for (let i = 0; i < str.length; i++) {
-      convertido = str.charCodeAt(i) ^ chave;
-      hexa[0] = (convertido >> 4).toString(16).toUpperCase();
-      hexa[1] = (convertido & 0xF).toString(16).toUpperCase();
-      resultado += hexa.join('');
-    }
-    return resultado;
-  }
-
   return (
     <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
       <SafeAreaView style={styles.container}>
-        <View style={styles.containerLogo}>
+        <View style={styles.logoContainer}>
           <Image
             source={require('../../assets/logo_verde2.png')}
             resizeMode="contain"
-            style={styles.img}
+            style={styles.logo}
           />
         </View>
-        <View style={styles.containerCentro}>
-          <Text style={styles.txtTitulo}>
+        <View style={styles.formContainer}>
+          <Text style={styles.title}>
             Boas vindas ao app
-            <Text style={styles.txtTituloColet}> CLT 400</Text>
+            <Text style={styles.titleHighlight}> CLT 400</Text>
           </Text>
-          <Text style={styles.txtsubTitulo}>
-            Faça o login abaixo para acessar.
-          </Text>
+          <Text style={styles.subtitle}>Faça o login abaixo para acessar.</Text>
           <TextInput
             style={styles.input}
             placeholder="Digite o usuário"
             placeholderTextColor="#3A3A3A"
             value={usuario}
+            onChangeText={setUsuario}
             editable={acessoApp}
           />
-          <TextInput style={styles.input} placeholder="Digite a senha" placeholderTextColor="#3A3A3A" value={senha} editable={acessoApp} secureTextEntry />
+          <TextInput
+            style={styles.input}
+            placeholder="Digite a senha"
+            placeholderTextColor="#3A3A3A"
+            value={senha}
+            onChangeText={setSenha}
+            secureTextEntry
+            editable={acessoApp}
+          />
           <View style={styles.switchContainer}>
             <Switch
               trackColor={{ false: '#767577', true: '#49BC99' }}
@@ -134,32 +135,31 @@ const Login = ({ navigation }) => {
               onValueChange={setIsSharedUser}
               value={isSharedUser}
             />
-            <Text style={styles.label}>Usuário Compartilhado</Text>
+            <Text style={styles.switchLabel}>Usuário Compartilhado</Text>
           </View>
           <TouchableOpacity
             style={[styles.button, !acessoApp && styles.disabledButton]}
-            onPress={acessoLogin}
+            onPress={() => acessoLogin(navigation)}
             disabled={!acessoApp}
           >
             <Text style={styles.buttonText}>Entrar</Text>
           </TouchableOpacity>
         </View>
-        <View style={styles.containerInferior}>
-          <Text style={styles.versao}>{infoDispositivo.mensagem + ' -'} Versão 1.00.0000</Text>
+        <View style={styles.footerContainer}>
+          <Text style={styles.versionText}>{infoDispositivo.mensagem} - Versão 1.00.0000</Text>
           <TouchableOpacity
-            style={styles.btnConfig}
-            onPress={() => {
-              navigation.navigate('Configuracao');
-            }}>
-            <Text style={styles.btnConfigTxt}> Configurações </Text>
+            style={styles.configButton}
+            onPress={() => navigation.navigate('Configuracao')}
+          >
+            <Text style={styles.configButtonText}>Configurações</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
-
     </TouchableWithoutFeedback>
   );
 };
 
+// Estilos atualizados e otimizados
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -167,58 +167,63 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: '#F1F5F4',
   },
-  containerLogo: {
-    flex: 2,
+  logoContainer: {
+    flex: 1,
     justifyContent: 'center',
-    marginTop: "6%",
-
+    width: '100%',
+    alignItems: 'center',
+    marginTop: 80
   },
-  img: {
-    width: 550,
-    height: '100%',
+  logo: {
+    width: '110%', // Ajuste o valor conforme necessário
+    height: undefined,
+    aspectRatio: 2, // Ajuste a proporção conforme necessário
   },
-  containerCentro: {
+  formContainer: {
     flex: 2,
     justifyContent: 'center',
     alignItems: 'center',
     width: '90%',
+    marginTop: 100
   },
-  txtTitulo: {
+  title: {
     color: '#000',
     fontSize: 23,
     fontWeight: 'bold',
+    textAlign: 'center',
   },
-  txtTituloColet: {
+  titleHighlight: {
     color: '#09A08D',
-    fontSize: 24,
-    fontWeight: 'bold',
   },
-  txtsubTitulo: {
+  subtitle: {
     color: '#4C5958',
     fontSize: 13,
-    marginTop: 6,
+    marginVertical: 10,
+    textAlign: 'center',
+  },
+  input: {
+    width: '100%',
+    height: 45,
+    borderColor: '#ddd',
+    borderWidth: 1,
+    paddingHorizontal: 10,
     marginBottom: 20,
+    fontSize: 16,
+    color: '#000',
+    borderRadius: 5,
+    backgroundColor: '#fff',
   },
   switchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 20,
   },
-  label: {
+  switchLabel: {
     color: '#3e3e3e',
-  },
-  input: {
-    width: '85%',
-    height: 45,
-    borderColor: 'gray',
-    borderWidth: 2,
-    padding: 10,
-    marginBottom: 20,
-    fontSize: 16,
-    color: '#000'
+    marginLeft: 8,
   },
   button: {
-    width: '85%',
+    width: '100%',
     backgroundColor: '#09A08D',
     padding: 15,
     justifyContent: 'center',
@@ -233,26 +238,26 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
   },
-  containerInferior: {
+  footerContainer: {
     flex: 1,
     justifyContent: 'flex-end',
     alignItems: 'center',
     width: '100%',
+
   },
-  versao: {
+  versionText: {
     color: '#4C5958',
     fontSize: 13,
     marginBottom: 6,
   },
-  btnConfig: {
+  configButton: {
     width: '100%',
     height: 50,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#3C787A',
-    //3e3e3e
   },
-  btnConfigTxt: {
+  configButtonText: {
     color: '#fff',
     fontSize: 15,
     fontWeight: 'bold',

@@ -1,21 +1,19 @@
-import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 
-const api = async () => {
+const getApiInstance = async () => {
   try {
-    // Obtenha a URL base do async storage (substitua pela sua lógica real)
+    // Obtenha a URL base do AsyncStorage
     const baseURL = await AsyncStorage.getItem('@MyApp:connection');
 
-    // Crie a instância do Axios com a URL base dinâmica
-    const instance = axios.create({
+    // Crie e retorne a instância do Axios com a URL base dinâmica
+    return axios.create({
       baseURL,
     });
-
-    return instance;
   } catch (error) {
     console.error('Erro ao obter a URL base:', error);
-    return null;
+    throw error; // Propaga o erro para o componente que chama
   }
 };
 
-export default api;
+export default getApiInstance;

@@ -9,7 +9,8 @@
       android:roundIcon="@mipmap/ic_launcher_round"
       android:allowBackup="false"
       android:usesCleartextTraffic="true"
-      android:theme="@style/AppTheme">
+      android:theme="@style/AppTheme"
+      android:supportsRtl="true">
       <meta-data
       android:name="com.google.mlkit.vision.DEPENDENCIES"
       android:value="barcode"

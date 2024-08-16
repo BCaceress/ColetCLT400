@@ -5,6 +5,7 @@ import * as React from 'react';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Configuracao from './pages/Configuracao';
 import Dashboard from './pages/Dashboard';
+import FiltroOrdensFab from './pages/FiltroOrdensFab';
 import Login from './pages/Login';
 import TelasOrdensFab from './pages/TelasOrdensFab';
 import Componentes from './pages/TelasOrdensFab/Componentes';
@@ -96,6 +97,13 @@ export default function Routes() {
           component={TelasOrdensFab}
           options={{
             headerTitle: 'Ordens de Fabricação e Apontamentos',
+          }}
+        />
+        <Stack.Screen
+          name="FiltroOrdensFab"
+          component={FiltroOrdensFab}
+          options={{
+            headerTitle: 'Filtro de Ordens',
           }}
         />
         <Stack.Screen name="Tab" component={TabRoutes}

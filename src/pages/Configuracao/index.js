@@ -16,7 +16,7 @@ import api from '../../services/api.js';
 
 const Configuracao = () => {
     const [connection, setConnection] = useState('');
-    const [postos, setPostos] = useState(["INJ01", "INJ02", "INJ03", "INJ04", "INJ05", "INJ08", "INJ08", "INJ08"]);
+    const [postos, setPostos] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [deviceDetails, setDeviceDetails] = useState('');
     const [uniqueId, setUniqueId] = useState('');
@@ -30,6 +30,16 @@ const Configuracao = () => {
                 const id = await DeviceInformation.getUniqueId();
                 setDeviceDetails(device);
                 setUniqueId(id);
+
+                // Fetch postos from API
+                const apiInstance = await api();
+                const response = await apiInstance.get(`/dispositivo?id=${id}`);
+                if (response.status === 200 && response.data?.postos) {
+                    const postosFromApi = response.data.postos.map(posto => posto.CODIGO_POSTO);
+                    setPostos(postosFromApi);
+                } else {
+                    console.error('Erro ao obter dados dos postos:', response.data?.mensagem || 'Dados inválidos.');
+                }
             } catch (error) {
                 console.error('Erro ao recuperar os dados:', error);
             }
@@ -179,9 +189,9 @@ const styles = StyleSheet.create({
     badge: {
         backgroundColor: '#09A08D',
         borderRadius: 15,
-        paddingHorizontal: 8,
-        paddingVertical: 4,
-        margin: 2,
+        paddingHorizontal: 10,
+        paddingVertical: 5,
+        margin: 5,
     },
     badgeText: {
         color: 'white',
