@@ -9,11 +9,10 @@ import {
   View
 } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import CameraBarcode from '../../components/CameraBarcode';
 import api from '../../services/api';
 
 const TelasOrdensFab = ({ route, navigation }) => {
-  const [showCamera, setShowCamera] = useState(false);
+
   const [OF, setOF] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -33,7 +32,6 @@ const TelasOrdensFab = ({ route, navigation }) => {
       const response = await apiInstance.get(`/lista_ordens?${variavel}=${selected}`);
 
       if (response.data.erro) {
-
         setError(response.data.erro);
         setOF([]);
       } else {
@@ -74,7 +72,7 @@ const TelasOrdensFab = ({ route, navigation }) => {
         <TouchableOpacity onPress={() => navigation.navigate('Tab', { valueOF: item.numero_ordem })}>
           <View style={styles.headerContainer}>
             <Text style={styles.category}>
-              <MaterialCommunityIcons name="clipboard-text-outline" color="#000" size={17} />
+              <MaterialCommunityIcons name="file-document" color="#888" size={17} />
               OF: <Text style={styles.boldText}>{item.numero_ordem}</Text> Total: {item.quantidade} PC | Pronta: {item.quantidade_pronta} PC
             </Text>
             <Text style={[styles.status, { color: getStatusColor(item.status) }]}>
@@ -110,7 +108,7 @@ const TelasOrdensFab = ({ route, navigation }) => {
       item.etapas_em_andamento.map(etapa => etapa.posto)
         .concat(item.sequenciamento.map(seq => seq.posto))
     );
-    return Array.from(new Set(allPostos)).concat('Todos');
+    return ['Todos', ...Array.from(new Set(allPostos))];
   }, [OF]);
 
   if (loading) {
@@ -131,31 +129,32 @@ const TelasOrdensFab = ({ route, navigation }) => {
 
   return (
     <View style={styles.container}>
-      {showCamera ? (
-        <CameraBarcode onClose={() => setShowCamera(false)} />
-      ) : (
-        <View style={styles.postoContainer}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.postoList}>
-            {postos.map((posto) => (
-              <TouchableOpacity
-                key={posto}
-                style={[
-                  styles.postoButton,
-                  selectedPost === posto && styles.selectedPost
-                ]}
-                onPress={() => setSelectedPost(posto)}
-              >
-                <Text style={[
-                  styles.postoText,
-                  selectedPost === posto && styles.selectedPostText
-                ]}>
-                  {posto}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
-      )}
+      <View style={styles.postoContainer}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.postoList}
+        >
+          {postos.map((posto) => (
+            <TouchableOpacity
+              key={posto}
+              style={[
+                styles.postoButton,
+                selectedPost === posto && styles.selectedPost
+              ]}
+              onPress={() => setSelectedPost(posto)}
+            >
+              <Text style={[
+                styles.postoText,
+                selectedPost === posto && styles.selectedPostText
+              ]}>
+                {posto}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
+
       <FlatList
         data={filteredData}
         renderItem={renderItem}
@@ -171,20 +170,20 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F5F5F5',
-    paddingTop: 20,
+    paddingTop: 15,
   },
   postoContainer: {
     paddingHorizontal: 10,
   },
   postoList: {
-    backgroundColor: '#FFF',
+    alignItems: 'center',
     paddingVertical: 8,
   },
   postoButton: {
     paddingVertical: 8,
     paddingHorizontal: 12,
     marginRight: 10,
-    borderRadius: 5,
+    borderRadius: 20,
     backgroundColor: '#CCC',
     alignItems: 'center',
     justifyContent: 'center',
@@ -226,7 +225,7 @@ const styles = StyleSheet.create({
   },
   itemContainer: {
     flex: 1,
-    padding: 12,
+    padding: 11,
     borderTopRightRadius: 15,
     borderBottomRightRadius: 15,
     backgroundColor: '#FFF',
@@ -237,7 +236,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   category: {
-    fontSize: 16,
+    fontSize: 15,
     color: '#000',
   },
   status: {
@@ -248,10 +247,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 4,
   },
   title: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: 'bold',
     color: '#333',
     flex: 1,
@@ -260,8 +259,8 @@ const styles = StyleSheet.create({
     color: '#FF5722',
     fontSize: 12,
     backgroundColor: '#ccc',
-    paddingRight: 7,
-    paddingLeft: 7,
+    paddingVertical: 4,
+    paddingHorizontal: 7,
     borderRadius: 5,
     marginLeft: 10,
   },
@@ -295,7 +294,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     textAlign: 'center',
   },
-
 });
 
 export default TelasOrdensFab;

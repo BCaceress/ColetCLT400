@@ -1,3 +1,4 @@
+import { useNavigation } from '@react-navigation/native'; // Importação do hook useNavigation
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import DeviceInformation from 'react-native-device-info';
@@ -18,9 +19,23 @@ const FiltroOrdensFab = () => {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
+  const navigation = useNavigation(); // Hook useNavigation
+
   useEffect(() => {
     fetchData(selectedType);
   }, [selectedType]);
+
+  useEffect(() => {
+    // Atualize o título da tela com base no filtro selecionado
+    const titles = {
+      clientes: 'Filtro de Clientes',
+      grupos: 'Filtro de Grupos',
+      processos: 'Filtro de Processos',
+      postos: 'Filtro de Postos',
+      texto: 'Filtro de Texto'
+    };
+    navigation.setOptions({ title: titles[selectedType] || 'Filtro de Ordens' });
+  }, [selectedType, navigation]);
 
   const fetchData = useCallback(async (type) => {
     let apiEndpoint = '';
@@ -111,12 +126,12 @@ const FiltroOrdensFab = () => {
   const renderButton = useCallback((label, iconName, type) => (
     <View style={styles.buttonContainer}>
       <TouchableOpacity
-        style={[styles.button, selectedType === type && styles.selectedButton]}
+        style={[styles.button, selectedType === type ? styles.selectedButton : styles.unselectedButton]}
         onPress={() => setSelectedType(type)}
       >
-        <MaterialCommunityIcons name={iconName} size={33} color="#fff" />
+        <MaterialCommunityIcons name={iconName} size={30} color={selectedType === type ? '#fff' : '#404040'} />
       </TouchableOpacity>
-      <Text style={styles.buttonText}>{label}</Text>
+      <Text style={[styles.buttonText, { color: selectedType === type ? '#fff' : '#404040' }]}>{label}</Text>
     </View>
   ), [selectedType]);
 
@@ -124,10 +139,10 @@ const FiltroOrdensFab = () => {
     <View style={styles.container}>
       <View style={styles.headerBackground} />
       <View style={styles.buttonsRow}>
-        {renderButton("Postos", "map-marker-radius", "postos")}
-        {renderButton("Clientes", "account-multiple-check", "clientes")}
-        {renderButton("Grupos", "account-group", "grupos")}
-        {renderButton("Processos", "sort-variant", "processos")}
+        {renderButton("Postos", "tools", "postos")}
+        {renderButton("Clientes", "briefcase-account", "clientes")}
+        {renderButton("Grupos", "tag", "grupos")}
+        {renderButton("Processos", "transfer", "processos")}
         {renderButton("Texto", "form-textbox", "texto")}
       </View>
       <View style={styles.containerList}>
@@ -148,7 +163,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'flex-start',
     alignItems: 'center',
-    backgroundColor: '#FAFAFA',
+    backgroundColor: '#F5F5F5',
   },
   headerBackground: {
     backgroundColor: '#09A08D',
@@ -168,14 +183,12 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     alignItems: 'center',
-    marginBottom: 10,
     width: '20%',
   },
   button: {
     width: 70,
     height: 70,
     borderRadius: 35,
-    backgroundColor: '#404040',
     justifyContent: 'center',
     alignItems: 'center',
     elevation: 3,
@@ -187,15 +200,17 @@ const styles = StyleSheet.create({
   selectedButton: {
     backgroundColor: '#00796B',
   },
+  unselectedButton: {
+    backgroundColor: '#B0BEC5',
+  },
   buttonText: {
     fontSize: 12,
-    color: '#333',
     marginTop: 5,
     textAlign: 'center',
   },
   containerList: {
     flex: 1,
-    width: '95%',
+    width: '100%',
     marginTop: 10,
   },
   loader: {

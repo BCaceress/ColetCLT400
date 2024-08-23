@@ -9,6 +9,7 @@ import {
 const Componentes = () => {
     return (
         <View style={styles.container}>
+
         </View>
     )
 }

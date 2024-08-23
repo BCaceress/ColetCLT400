@@ -1,29 +1,29 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import api from '../services/api';
+import api from '../services/api'; // Ajuste o caminho conforme necessário
+
 const DadosContext = createContext();
 
 export function DadosProvider({ children, valueOF }) {
-  const [dados, setDados] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [dados, setDados] = useState({});
+  const [isLoading, setIsLoading] = useState(true);  // Iniciar como true para mostrar carregamento inicialmente
   const [processosLista, setProcessosLista] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const apiInstance = await api();
-        const response = await apiInstance.get(
-          `/ordens?evento=20&numeroOF=${valueOF}`
-        );
+        const response = await apiInstance.get(`/detalhe_ordem?numeroOF=${valueOF}`);
         setDados(response.data);
         setProcessosLista(response.data.ordem.processos);
-        setIsLoading(true);
       } catch (error) {
-        setIsLoading(true);
         console.error('Erro ao obter dados da API:', error);
+      } finally {
+        setIsLoading(false); 
       }
     };
+
     fetchData();
-  }, []);
+  }, [valueOF]);  
 
   return (
     <DadosContext.Provider value={{ dados, isLoading, processosLista }}>

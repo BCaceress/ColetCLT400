@@ -20,17 +20,19 @@ const Dashboard = ({ navigation, route }) => {
     return (
         <View style={styles.container}>
             <View style={styles.headerBackground} />
-            <View style={[styles.card, { width: width * 0.9 }]}>
-                <View style={styles.headerContainer}>
-                    <MaterialCommunityIcons name="account-circle-outline" color="#09A08D" size={35} style={styles.icon} />
-                    <View style={styles.userInfo}>
-                        <Text style={styles.title}>{route.params?.usuario}</Text>
-                        <Text style={styles.number}>ID: 1234</Text>
+            <View style={styles.cardContainer}>
+                <View style={styles.card}>
+                    <View style={styles.headerContainer}>
+                        <MaterialCommunityIcons name="account-circle-outline" color="#09A08D" size={35} style={styles.icon} />
+                        <View style={styles.userInfo}>
+                            <Text style={styles.title}>{route.params?.usuario}</Text>
+                            <Text style={styles.number}>ID: 1234</Text>
+                        </View>
                     </View>
+                    <Text style={styles.description}>
+                        Bem-vindo ao Colet Sistemas! Aqui você pode acompanhar suas ordens, gerenciar tarefas e acessar relatórios!
+                    </Text>
                 </View>
-                <Text style={styles.description}>
-                    Bem-vindo ao Colet Sistemas! Aqui você pode acompanhar suas ordens, gerenciar tarefas e acessar relatórios!
-                </Text>
             </View>
             <View style={styles.containerButton}>
                 <DashboardButton
@@ -43,7 +45,7 @@ const Dashboard = ({ navigation, route }) => {
                     onPress={() => handlePress('#')}
                     title="Produtos e Materiais"
                     imageSource={require('../../assets/prodMateriais.png')}
-                    backgroundColor="#ccc"
+                    backgroundColor="#bbb"
                     reverse
                 />
                 <DashboardButton
@@ -61,6 +63,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#F5F5F5',
+        alignItems: 'center',
     },
     headerBackground: {
         backgroundColor: '#09A08D',
@@ -71,12 +74,17 @@ const styles = StyleSheet.create({
         borderBottomLeftRadius: 30,
         borderBottomRightRadius: 30,
     },
+    cardContainer: {
+        alignItems: 'center',
+        width: '100%',
+        paddingHorizontal: 20,
+        marginTop: '4%',
+    },
     card: {
         backgroundColor: 'white',
         borderRadius: 15,
         padding: 20,
-        marginTop: 25,
-        marginHorizontal: 20,
+        width: width * 0.9,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.3,
@@ -112,7 +120,7 @@ const styles = StyleSheet.create({
     containerButton: {
         flexDirection: 'row',
         flexWrap: 'wrap',
-        justifyContent: 'space-between',
+        justifyContent: 'center',
         alignItems: 'center',
         padding: 20,
         marginTop: 20,

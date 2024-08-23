@@ -4,7 +4,7 @@ import BarcodeMask from 'react-native-barcode-mask';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { Camera, useCameraDevice, useCameraPermission, useCodeScanner } from 'react-native-vision-camera';
 
-const CameraBarcode = ({ onClose }) => {
+const CameraBarcode = ({ onClose, onScanComplete }) => {
   const { hasPermission, requestPermission } = useCameraPermission();
   const device = useCameraDevice('back');
   const [scannedCode, setScannedCode] = useState(null);
@@ -36,7 +36,10 @@ const CameraBarcode = ({ onClose }) => {
   };
 
   const handleGetItemPress = () => {
-    console.log('clicado')
+    if (onScanComplete) {
+      onScanComplete(scannedCode);
+    }
+    onClose();
   }
 
   if (!device) {
@@ -46,7 +49,7 @@ const CameraBarcode = ({ onClose }) => {
       </View>
     );
   }
-  //  codeTypes: ['qr', 'ean-13', 'code-39', 'code-128'],
+
   const codeScanner = useCodeScanner({
     codeTypes: ['code-39'],
     onCodeScanned: handleCodeScanned,
@@ -78,9 +81,6 @@ const CameraBarcode = ({ onClose }) => {
           animatedLineThickness={4}
           animatedLineOrientation="horizontal"
         />
-        {/* <View style={styles.header}>
-          <Text style={styles.headerText}>Escanear Código de barra</Text>
-        </View> */}
 
         <View style={styles.bottomView}>
           <View style={styles.sup}>
@@ -109,7 +109,6 @@ const CameraBarcode = ({ onClose }) => {
             />
           </View>
 
-          {/* Botão */}
           <TouchableOpacity
             style={[styles.button, !scannedCode && styles.disabledButton]}
             onPress={handleGetItemPress}
@@ -119,7 +118,7 @@ const CameraBarcode = ({ onClose }) => {
           </TouchableOpacity>
         </View>
       </View>
-    </Modal >
+    </Modal>
   );
 };
 

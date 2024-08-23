@@ -11,7 +11,7 @@ const GruposList = ({ dataList }) => {
     useEffect(() => {
         const handler = setTimeout(() => {
             filterData();
-        }, 300); // Debounce de 300ms
+        }, 300);
 
         return () => {
             clearTimeout(handler);
@@ -56,7 +56,6 @@ const GruposList = ({ dataList }) => {
     return (
         <View style={styles.container}>
             <View style={styles.headerContainer}>
-                <Text style={styles.title}>Selecionar Grupos</Text>
                 <View style={styles.searchContainer}>
                     <MaterialCommunityIcons name="magnify" size={20} color="#333" style={styles.icon} />
                     <TextInput
@@ -81,35 +80,26 @@ const GruposList = ({ dataList }) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        width: '100%',
-        backgroundColor: '#f8f8f8',
+        backgroundColor: '#F5F5F5',
+        flexDirection: 'column',
     },
     headerContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingHorizontal: 5,
-        paddingVertical: 7,
-        backgroundColor: '#ccc',
-        elevation: 2,
-        justifyContent: 'space-between',
         borderRadius: 15,
+        padding: 15,
     },
-    title: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: "#333",
-        flex: 1,
-    },
+
     searchContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        borderColor: '#ddd',
+        borderColor: '#BDBDBD',
         borderWidth: 1,
-        borderRadius: 25,
-        backgroundColor: '#fff',
+        borderRadius: 30,
+        backgroundColor: '#ffffff',
         flex: 1,
-        marginLeft: 10,
-        paddingHorizontal: 10,
+        paddingHorizontal: 12,
+        paddingVertical: 5,
     },
     icon: {
         marginRight: 10,
@@ -125,12 +115,16 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
         padding: 15,
-        borderBottomWidth: 1,
-        borderBottomColor: '#ddd',
-        borderRadius: 8,
-        backgroundColor: '#fff',
+        borderRadius: 10,
+        backgroundColor: '#FFFFFF',
         marginVertical: 5,
-        elevation: 1,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 2,
+        marginStart: 14,
+        marginEnd: 14
     },
     pressedItem: {
         backgroundColor: '#e6f7ff',
@@ -140,7 +134,8 @@ const styles = StyleSheet.create({
         color: '#333',
     },
     flatList: {
-        paddingBottom: 20,
+        flexGrow: 1,
+        marginBottom: 10,
     },
 });
 

@@ -18,9 +18,9 @@ export default function CabecalhoOF() {
         LinearGradient={LinearGradient}
       >
         <View style={styles.card}>
-          <Text style={styles.textCard}>Nro. OF:<Text style={styles.textNegrito}>{dados?.ordem?.numero_ordem}</Text> </Text>
-          <Text style={styles.textCard}>Produto: {dados?.ordem?.referencia} - {dados?.ordem?.produto}</Text>
-          <Text style={styles.textCard}>Classificação:</Text>
+          <Text style={styles.textCard}>Geração:<Text style={styles.textNegrito}>{dados?.ordem?.numero_ordem}</Text> </Text>
+          <Text style={styles.textCard}>Programação: {dados?.ordem?.referencia} - {dados?.ordem?.produto}</Text>
+          <Text style={styles.textCard}>Classificação: {dados?.ordem?.classificacao} - {dados?.ordem?.nome_classificacao}</Text>
           <Text style={styles.textCard}>OF Origem:</Text>
           <Text style={styles.textCard}>Qtde da OF: {dados?.ordem?.quantidade}</Text>
         </View>

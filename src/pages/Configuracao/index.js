@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import {
     ActivityIndicator,
     Alert,
+    ScrollView,
     StyleSheet,
     Text,
     TextInput,
@@ -20,10 +21,12 @@ const Configuracao = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [deviceDetails, setDeviceDetails] = useState('');
     const [uniqueId, setUniqueId] = useState('');
+    const [isPostosLoading, setIsPostosLoading] = useState(true);
 
     useEffect(() => {
         const fetchData = async () => {
             try {
+                setIsPostosLoading(true); // Inicia o carregamento dos postos
                 const savedConnection = await AsyncStorage.getItem('@MyApp:connection');
                 setConnection(savedConnection || '');
                 const device = await DeviceInformation.getDeviceName();
@@ -42,6 +45,8 @@ const Configuracao = () => {
                 }
             } catch (error) {
                 console.error('Erro ao recuperar os dados:', error);
+            } finally {
+                setIsPostosLoading(false); // Finaliza o carregamento dos postos
             }
         };
         fetchData();
@@ -102,15 +107,21 @@ const Configuracao = () => {
             </View>
             <Text style={styles.titulo}>Postos habilitados</Text>
             <View style={styles.card}>
-                <View style={styles.contentContainer}>
-                    <View style={styles.badgesContainer}>
-                        {postos.map((posto, index) => (
-                            <View key={index} style={styles.badge}>
-                                <Text style={styles.badgeText}>{posto}</Text>
-                            </View>
-                        ))}
+                {isPostosLoading ? (
+                    <View style={styles.loadingContainer}>
+                        <ActivityIndicator size="large" color="#09A08D" />
                     </View>
-                </View>
+                ) : (
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                        <View style={styles.badgesContainer}>
+                            {postos.map((posto, index) => (
+                                <View key={index} style={styles.badge}>
+                                    <Text style={styles.badgeText}>{posto}</Text>
+                                </View>
+                            ))}
+                        </View>
+                    </ScrollView>
+                )}
             </View>
             <Text style={styles.titulo}>Configurações do sistema</Text>
             <View style={styles.card}>
@@ -141,7 +152,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         padding: 20,
-        backgroundColor: '#fff',
+        backgroundColor: '#F5F5F5',
     },
     titulo: {
         color: '#000',
@@ -191,7 +202,7 @@ const styles = StyleSheet.create({
         borderRadius: 15,
         paddingHorizontal: 10,
         paddingVertical: 5,
-        margin: 5,
+        marginRight: 10,  // Use marginRight for horizontal spacing
     },
     badgeText: {
         color: 'white',
@@ -199,7 +210,7 @@ const styles = StyleSheet.create({
     },
     badgesContainer: {
         flexDirection: 'row',
-        flexWrap: 'wrap',
+        alignItems: 'center',
     },
     inputConexao: {
         height: 40,
@@ -235,6 +246,11 @@ const styles = StyleSheet.create({
         fontSize: 19,
         alignSelf: 'center',
         fontWeight: 'bold',
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
 });
 

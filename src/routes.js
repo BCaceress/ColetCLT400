@@ -102,9 +102,6 @@ export default function Routes() {
         <Stack.Screen
           name="FiltroOrdensFab"
           component={FiltroOrdensFab}
-          options={{
-            headerTitle: 'Filtro de Ordens',
-          }}
         />
         <Stack.Screen name="Tab" component={TabRoutes}
           options={({ route }) => ({

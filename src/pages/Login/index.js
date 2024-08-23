@@ -14,9 +14,9 @@ import {
   View
 } from 'react-native';
 import DeviceInformation from 'react-native-device-info';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import api from '../../services/api';
 
-// Hook personalizado para obter e definir informações do dispositivo
 const useDeviceInfo = () => {
   const [infoDispositivo, setInfoDispositivo] = useState({});
   const [acessoApp, setAcessoApp] = useState(false);
@@ -37,7 +37,6 @@ const useDeviceInfo = () => {
   return { infoDispositivo, acessoApp, getIDeAPI };
 };
 
-// Hook personalizado para login
 const useLogin = (usuario, senha) => {
   const acessoLogin = useCallback(async (navigation) => {
     const data = {
@@ -61,7 +60,6 @@ const useLogin = (usuario, senha) => {
   return acessoLogin;
 };
 
-// Função para criptografar a senha
 const encode = (str) => {
   const chave = Math.floor(Math.random() * 255);
   const hexa = [];
@@ -84,6 +82,7 @@ const Login = ({ navigation }) => {
   const [isSharedUser, setIsSharedUser] = useState(false);
   const [usuario, setUsuario] = useState('duploz');
   const [senha, setSenha] = useState('yp0p0th@m');
+  const [showPassword, setShowPassword] = useState(false); // Estado para mostrar/ocultar senha
   const { infoDispositivo, acessoApp, getIDeAPI } = useDeviceInfo();
   const acessoLogin = useLogin(usuario, senha);
   const isFocused = useIsFocused();
@@ -113,23 +112,35 @@ const Login = ({ navigation }) => {
           <TextInput
             style={styles.input}
             placeholder="Digite o usuário"
-            placeholderTextColor="#3A3A3A"
+            placeholderTextColor="#A0A0A0"
             value={usuario}
             onChangeText={setUsuario}
             editable={acessoApp}
           />
-          <TextInput
-            style={styles.input}
-            placeholder="Digite a senha"
-            placeholderTextColor="#3A3A3A"
-            value={senha}
-            onChangeText={setSenha}
-            secureTextEntry
-            editable={acessoApp}
-          />
+          <View style={styles.passwordContainer}>
+            <TextInput
+              style={styles.passwordInput}
+              placeholder="Digite a senha"
+              placeholderTextColor="#A0A0A0"
+              value={senha}
+              onChangeText={setSenha}
+              secureTextEntry={!showPassword}
+              editable={acessoApp}
+            />
+            <TouchableOpacity
+              style={styles.eyeIcon}
+              onPress={() => setShowPassword(prev => !prev)}
+            >
+              <MaterialCommunityIcons
+                name={showPassword ? 'eye' : 'eye-off'}
+                size={24}
+                color="#A0A0A0"
+              />
+            </TouchableOpacity>
+          </View>
           <View style={styles.switchContainer}>
             <Switch
-              trackColor={{ false: '#767577', true: '#49BC99' }}
+              trackColor={{ false: '#D3D3D3', true: '#09A08D' }}
               thumbColor={isSharedUser ? '#f5dd4b' : '#f4f3f4'}
               ios_backgroundColor="#3e3e3e"
               onValueChange={setIsSharedUser}
@@ -159,59 +170,80 @@ const Login = ({ navigation }) => {
   );
 };
 
-// Estilos atualizados e otimizados
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#F1F5F4',
+    backgroundColor: '#F5F5F5',
+    justifyContent: 'space-between',
   },
   logoContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    width: '100%',
     alignItems: 'center',
-    marginTop: 80
+    marginVertical: 35,
   },
   logo: {
-    width: '110%', // Ajuste o valor conforme necessário
+    width: '100%',
     height: undefined,
-    aspectRatio: 2, // Ajuste a proporção conforme necessário
+    aspectRatio: 2,
   },
   formContainer: {
-    flex: 2,
-    justifyContent: 'center',
-    alignItems: 'center',
     width: '90%',
-    marginTop: 100
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    padding: 20,
+    alignSelf: 'center',
+    marginBottom: 20,
   },
   title: {
-    color: '#000',
-    fontSize: 23,
+    color: '#333',
+    fontSize: 24,
     fontWeight: 'bold',
     textAlign: 'center',
+    marginBottom: 10,
   },
   titleHighlight: {
     color: '#09A08D',
   },
   subtitle: {
-    color: '#4C5958',
-    fontSize: 13,
-    marginVertical: 10,
+    color: '#666',
+    fontSize: 14,
+    marginBottom: 20,
     textAlign: 'center',
   },
   input: {
     width: '100%',
     height: 45,
-    borderColor: '#ddd',
+    borderColor: '#DDD',
     borderWidth: 1,
+    borderRadius: 8,
     paddingHorizontal: 10,
-    marginBottom: 20,
+    marginBottom: 15,
     fontSize: 16,
-    color: '#000',
-    borderRadius: 5,
-    backgroundColor: '#fff',
+    color: '#333',
+    backgroundColor: '#F9F9F9',
+  },
+  passwordContainer: {
+    position: 'relative',
+  },
+  passwordInput: {
+    width: '100%',
+    height: 45,
+    borderColor: '#DDD',
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    marginBottom: 15,
+    fontSize: 16,
+    color: '#333',
+    backgroundColor: '#F9F9F9',
+  },
+  eyeIcon: {
+    position: 'absolute',
+    right: 10,
+    top: 12,
   },
   switchContainer: {
     flexDirection: 'row',
@@ -219,47 +251,44 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   switchLabel: {
-    color: '#3e3e3e',
-    marginLeft: 8,
+    color: '#666',
+    marginLeft: 10,
   },
   button: {
     width: '100%',
     backgroundColor: '#09A08D',
-    padding: 15,
+    paddingVertical: 15,
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 5,
+    borderRadius: 8,
+    elevation: 3,
   },
   disabledButton: {
-    backgroundColor: 'gray',
+    backgroundColor: '#B0B0B0',
   },
   buttonText: {
-    color: 'white',
-    fontSize: 20,
+    color: '#FFF',
+    fontSize: 18,
     fontWeight: 'bold',
   },
   footerContainer: {
-    flex: 1,
-    justifyContent: 'flex-end',
     alignItems: 'center',
-    width: '100%',
-
   },
   versionText: {
-    color: '#4C5958',
-    fontSize: 13,
-    marginBottom: 6,
+    color: '#666',
+    fontSize: 12,
+    marginBottom: 10,
   },
   configButton: {
     width: '100%',
-    height: 50,
+    height: 45,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#3C787A',
   },
   configButtonText: {
-    color: '#fff',
-    fontSize: 15,
+    color: '#FFF',
+    fontSize: 16,
     fontWeight: 'bold',
   },
 });
