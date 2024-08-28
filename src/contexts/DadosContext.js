@@ -1,12 +1,11 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import api from '../services/api'; // Ajuste o caminho conforme necessário
+import api from '../services/api';
 
 const DadosContext = createContext();
 
 export function DadosProvider({ children, valueOF }) {
-  const [dados, setDados] = useState({});
-  const [isLoading, setIsLoading] = useState(true);  // Iniciar como true para mostrar carregamento inicialmente
-  const [processosLista, setProcessosLista] = useState([]);
+  const [dados, setDados] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -14,19 +13,23 @@ export function DadosProvider({ children, valueOF }) {
         const apiInstance = await api();
         const response = await apiInstance.get(`/detalhe_ordem?numeroOF=${valueOF}`);
         setDados(response.data);
-        setProcessosLista(response.data.ordem.processos);
       } catch (error) {
         console.error('Erro ao obter dados da API:', error);
+        setDados({ error: 'Não foi possível obter os dados. Por favor, tente novamente mais tarde.' });
       } finally {
-        setIsLoading(false); 
+        setIsLoading(false);
       }
     };
 
-    fetchData();
-  }, [valueOF]);  
+    if (!dados) {
+      fetchData();
+    } else {
+      setIsLoading(false);
+    }
+  }, [valueOF]);
 
   return (
-    <DadosContext.Provider value={{ dados, isLoading, processosLista }}>
+    <DadosContext.Provider value={{ dados, isLoading }}>
       {children}
     </DadosContext.Provider>
   );

@@ -2,12 +2,15 @@ import { useNavigation } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import permissaoUsuarios from '../../hooks/permissaoUsuarios';
 
-const PostosList = ({ dataList }) => {
+const PostosList = ({ dataList, onApontamentosToggle }) => {
     const [searchText, setSearchText] = useState('');
     const [filteredData, setFilteredData] = useState(dataList);
     const [selectedItems, setSelectedItems] = useState([]);
+    const [isApontamentosActive, setIsApontamentosActive] = useState(false);
     const navigation = useNavigation();
+    const permissao = permissaoUsuarios();
 
     useEffect(() => {
         filterData();
@@ -32,14 +35,19 @@ const PostosList = ({ dataList }) => {
     };
 
     const handleItemPress = (codigoPosto) => {
-        setSelectedItems(prevSelectedItems => {
-            const isSelected = prevSelectedItems.includes(codigoPosto);
-            if (isSelected) {
-                return prevSelectedItems.filter(item => item !== codigoPosto);
-            } else {
-                return [...prevSelectedItems, codigoPosto];
-            }
-        });
+        if (permissao === 'A' || isApontamentosActive) {
+            // Allow only one item to be selected
+            setSelectedItems([codigoPosto]);
+        } else {
+            setSelectedItems(prevSelectedItems => {
+                const isSelected = prevSelectedItems.includes(codigoPosto);
+                if (isSelected) {
+                    return prevSelectedItems.filter(item => item !== codigoPosto);
+                } else {
+                    return [...prevSelectedItems, codigoPosto];
+                }
+            });
+        }
     };
 
     const handleSelectAll = () => {
@@ -53,6 +61,18 @@ const PostosList = ({ dataList }) => {
 
     const handleSubmit = () => {
         navigation.navigate('TelasOrdensFab', { selected: selectedItems, variavel: 'postos' });
+    };
+
+    const handleToggleApontamentos = () => {
+        setIsApontamentosActive(prevState => {
+            const newState = !prevState;
+            onApontamentosToggle(newState);
+            if (newState) {
+                // Remove all selected items when apontamentos is activated
+                setSelectedItems([]);
+            }
+            return newState;
+        });
     };
 
     const renderItem = ({ item }) => (
@@ -79,7 +99,7 @@ const PostosList = ({ dataList }) => {
     return (
         <View style={styles.container}>
             <View style={styles.headerContainer}>
-                <View style={styles.searchContainer}>
+                <View style={[styles.searchContainer, { flex: permissao === 'A' ? 3 : 1 }]}>
                     <MaterialCommunityIcons name="magnify" size={20} color="#666" style={styles.icon} />
                     <TextInput
                         style={styles.textInput}
@@ -102,6 +122,16 @@ const PostosList = ({ dataList }) => {
                     >
                         <MaterialCommunityIcons name="checkbox-blank-off-outline" size={24} color="#333" />
                     </TouchableOpacity>
+                    {permissao !== 'A' && (
+                        <TouchableOpacity
+                            style={styles.apontamentosButton(isApontamentosActive)}
+                            onPress={handleToggleApontamentos}
+                        >
+                            <Text style={styles.apontamentosButtonText}>
+                                Apontamentos
+                            </Text>
+                        </TouchableOpacity>
+                    )}
                 </View>
             </View>
 
@@ -189,10 +219,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         borderRadius: 15,
         padding: 15,
-
     },
     searchContainer: {
-        flex: 3,
         flexDirection: 'row',
         alignItems: 'center',
         borderColor: '#BDBDBD',
@@ -226,6 +254,19 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         justifyContent: 'center',
         alignItems: 'center',
+    },
+    apontamentosButton: (isActive) => ({
+        backgroundColor: '#ffffff',
+        borderColor: isActive ? '#09A08D' : '#ddd',
+        padding: 10,
+        borderRadius: 30,
+        borderWidth: 2,
+        justifyContent: 'center',
+        alignItems: 'center',
+    }),
+    apontamentosButtonText: {
+        color: '#000',
+        fontSize: 15,
     },
 });
 

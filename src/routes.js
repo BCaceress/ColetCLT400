@@ -3,6 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import * as React from 'react';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { DadosProvider } from './contexts/DadosContext';
 import Configuracao from './pages/Configuracao';
 import Dashboard from './pages/Dashboard';
 import FiltroOrdensFab from './pages/FiltroOrdensFab';
@@ -17,46 +18,61 @@ const Stack = createStackNavigator();
 const Tab = createMaterialBottomTabNavigator();
 
 function TabRoutes({ route }) {
-  const { valueOF } = route.params;
+  const { valueOF } = route.params || {};  // Desestruture com fallback para um objeto vazio
   return (
-    <Tab.Navigator
-      initialRouteName="DadosGerais"
-      activeColor="#0D0D0D"
-      inactiveColor="#fff"
-      barStyle={{ backgroundColor: '#09A08D' }}
-    >
-      <Tab.Screen name="Dados Gerais" component={DadosGerais} options={{
-        tabBarLabel: 'Dados Gerais',
-        tabBarIcon: ({ color }) => (
-          <MaterialCommunityIcons name="file-table" color={color} size={27} />
-        ),
-      }}
-        initialParams={{ valueOF }}
-      />
-      <Tab.Screen name="Processos" component={Processos} options={{
-        tabBarLabel: 'Processos',
-        tabBarIcon: ({ color }) => (
-          <MaterialCommunityIcons name="table-cog" color={color} size={27} />
-        ),
-      }}
-        initialParams={{ valueOF }}
-      />
-      <Tab.Screen name="OF Virtual" component={OFVirtual} options={{
-        tabBarLabel: 'OF Virtual',
-        tabBarIcon: ({ color }) => (
-          <MaterialCommunityIcons name="file-document" color={color} size={27} />
-        ),
-      }}
-      />
-      <Tab.Screen name="Componentes" component={Componentes} options={{
-        tabBarLabel: 'Componentes',
-        tabBarIcon: ({ color }) => (
-          <MaterialCommunityIcons name="hammer-screwdriver" color={color} size={27} />
-        ),
-      }}
-      />
-    </Tab.Navigator>
-  )
+    <DadosProvider valueOF={valueOF}>
+      <Tab.Navigator
+        initialRouteName="DadosGerais"
+        activeColor="#0D0D0D"
+        inactiveColor="#fff"
+        barStyle={{ backgroundColor: '#09A08D' }}
+      >
+        <Tab.Screen
+          name="Dados Gerais"
+          component={DadosGerais}
+          options={{
+            tabBarLabel: 'Dados Gerais',
+            tabBarIcon: ({ color }) => (
+              <MaterialCommunityIcons name="file-table" color={color} size={27} />
+            ),
+          }}
+          initialParams={{ valueOF }}
+        />
+        <Tab.Screen
+          name="Processos"
+          component={Processos}
+          options={{
+            tabBarLabel: 'Processos',
+            tabBarIcon: ({ color }) => (
+              <MaterialCommunityIcons name="table-cog" color={color} size={27} />
+            ),
+          }}
+          initialParams={{ valueOF }}
+        />
+        <Tab.Screen
+          name="Componentes"
+          component={Componentes}
+          options={{
+            tabBarLabel: 'Componentes',
+            tabBarIcon: ({ color }) => (
+              <MaterialCommunityIcons name="hammer-screwdriver" color={color} size={27} />
+            ),
+          }}
+          initialParams={{ valueOF }}
+        />
+        <Tab.Screen
+          name="OF Virtual"
+          component={OFVirtual}
+          options={{
+            tabBarLabel: 'OF Virtual',
+            tabBarIcon: ({ color }) => (
+              <MaterialCommunityIcons name="file-document" color={color} size={27} />
+            ),
+          }}
+        />
+      </Tab.Navigator>
+    </DadosProvider>
+  );
 }
 export default function Routes() {
   return (

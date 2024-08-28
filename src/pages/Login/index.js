@@ -82,7 +82,7 @@ const Login = ({ navigation }) => {
   const [isSharedUser, setIsSharedUser] = useState(false);
   const [usuario, setUsuario] = useState('duploz');
   const [senha, setSenha] = useState('yp0p0th@m');
-  const [showPassword, setShowPassword] = useState(false); // Estado para mostrar/ocultar senha
+  const [showPassword, setShowPassword] = useState(false);
   const { infoDispositivo, acessoApp, getIDeAPI } = useDeviceInfo();
   const acessoLogin = useLogin(usuario, senha);
   const isFocused = useIsFocused();

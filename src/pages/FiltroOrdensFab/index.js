@@ -1,4 +1,4 @@
-import { useNavigation } from '@react-navigation/native'; // Importação do hook useNavigation
+import { useNavigation } from '@react-navigation/native';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import DeviceInformation from 'react-native-device-info';
@@ -7,9 +7,9 @@ import ClientesList from '../../components/FiltroOrdensFab/ClientesList';
 import GruposList from '../../components/FiltroOrdensFab/GruposList';
 import PostosList from '../../components/FiltroOrdensFab/PostosList';
 import ProcessosList from '../../components/FiltroOrdensFab/ProcessosList';
-import TextoList from '../../components/FiltroOrdensFab/TextoList'; // Importe o novo componente
+import TextoList from '../../components/FiltroOrdensFab/TextoList';
+import permissaoUsuarios from '../../hooks/permissaoUsuarios';
 import getApiInstance from '../../services/api';
-
 const FiltroOrdensFab = () => {
   const [searchText, setSearchText] = useState('');
   const [filterType, setFilterType] = useState('referencia');
@@ -18,9 +18,9 @@ const FiltroOrdensFab = () => {
   const [selectedType, setSelectedType] = useState('postos');
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-
-  const navigation = useNavigation(); // Hook useNavigation
-
+  const [isApontamentosActive, setIsApontamentosActive] = useState(false);
+  const permissao = permissaoUsuarios();
+  const navigation = useNavigation();
   useEffect(() => {
     fetchData(selectedType);
   }, [selectedType]);
@@ -119,21 +119,30 @@ const FiltroOrdensFab = () => {
         return <TextoList onItemPress={handleItemSelection} />;
       case 'postos':
       default:
-        return <PostosList dataList={dataList} onItemPress={handleItemSelection} />;
+        return <PostosList dataList={dataList} onItemPress={handleItemSelection} onApontamentosToggle={setIsApontamentosActive} />;
     }
-  }, [selectedType, dataList, handleItemSelection]);
+  }, [selectedType, dataList, handleItemSelection, setIsApontamentosActive]);
 
-  const renderButton = useCallback((label, iconName, type) => (
-    <View style={styles.buttonContainer}>
-      <TouchableOpacity
-        style={[styles.button, selectedType === type ? styles.selectedButton : styles.unselectedButton]}
-        onPress={() => setSelectedType(type)}
-      >
-        <MaterialCommunityIcons name={iconName} size={30} color={selectedType === type ? '#fff' : '#404040'} />
-      </TouchableOpacity>
-      <Text style={[styles.buttonText, { color: selectedType === type ? '#fff' : '#404040' }]}>{label}</Text>
-    </View>
-  ), [selectedType]);
+  const renderButton = useCallback((label, iconName, type) => {
+    if (isApontamentosActive && type !== 'postos') {
+      return null; // Não renderiza os botões quando Apontamentos está ativo
+    }
+    if (permissao === 'A' && type !== 'postos') {
+      return null; // Não renderiza os botões que não têm permissão
+    }
+    return (
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity
+          style={[styles.button, selectedType === type ? styles.selectedButton : styles.unselectedButton]}
+          onPress={() => setSelectedType(type)}
+          disabled={permissao === 'A' && type !== 'postos'}
+        >
+          <MaterialCommunityIcons name={iconName} size={30} color={selectedType === type ? '#fff' : '#404040'} />
+        </TouchableOpacity>
+        <Text style={[styles.buttonText, { color: selectedType === type ? '#fff' : '#404040' }]}>{label}</Text>
+      </View>
+    );
+  }, [selectedType, permissao, isApontamentosActive]);
 
   return (
     <View style={styles.container}>

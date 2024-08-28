@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import {
+    ActivityIndicator,
     Dimensions,
     FlatList,
     Pressable,
@@ -10,8 +11,8 @@ import {
 } from 'react-native';
 import PagerView from 'react-native-pager-view';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import { DadosProvider, useDados } from '../../../contexts/DadosContext';
-
+import { useDados } from '../../../contexts/DadosContext';
+import { colors, globalStyles } from "../../../styles/globalStyles";
 const { width } = Dimensions.get('window');
 
 const TabContent = ({ title, items = [], itemRenderer }) => (
@@ -86,13 +87,15 @@ const ExpandedContent = ({ item, currentPage, setCurrentPage }) => (
     </>
 );
 
-const ProcessosContent = ({ valueOF }) => {
-    const { dados, isLoading, processosLista = [] } = useDados();
+const ProcessosContent = () => {
+    const { dados, isLoading } = useDados();
+    const processosLista = dados?.ordem.processos || [];
     const [expandedItemId, setExpandedItemId] = useState(null);
-    const [currentPage, setCurrentPage] = useState(0);
+    const [currentPage, setCurrentPage] = useState({});
 
     const renderItem = useCallback(({ item }) => {
         const isExpanded = item.processo === expandedItemId;
+        const page = currentPage[item.processo] || 0;
 
         return (
             <View style={styles.itemContainer}>
@@ -125,7 +128,14 @@ const ProcessosContent = ({ valueOF }) => {
                     </View>
                 </Pressable>
                 {isExpanded && (
-                    <ExpandedContent item={item} currentPage={currentPage} setCurrentPage={setCurrentPage} />
+                    <ExpandedContent
+                        item={item}
+                        currentPage={page}
+                        setCurrentPage={(position) => setCurrentPage(prev => ({
+                            ...prev,
+                            [item.processo]: position
+                        }))}
+                    />
                 )}
             </View>
         );
@@ -133,16 +143,24 @@ const ProcessosContent = ({ valueOF }) => {
 
     if (isLoading) {
         return (
+            <View style={globalStyles.loadingContainer}>
+                <ActivityIndicator size="large" color={colors.primary} />
+            </View>
+        );
+    }
+
+    if (!processosLista.length) {
+        return (
             <View style={styles.loadingContainer}>
-                <Text style={styles.loadingText}>Carregando...</Text>
+                <Text style={styles.loadingText}>Nenhum processo disponível</Text>
             </View>
         );
     }
 
     return (
-        <View style={styles.container}>
-            <View style={styles.header}>
-                <Text style={styles.headerTitle}>Processos</Text>
+        <View style={globalStyles.container}>
+            <View style={globalStyles.header}>
+                <Text style={globalStyles.headerTitle}>Processos</Text>
             </View>
             <FlatList
                 data={processosLista}
@@ -154,44 +172,18 @@ const ProcessosContent = ({ valueOF }) => {
     );
 };
 
-const Processos = ({ route }) => {
-    const { valueOF } = route.params;
+const Processos = () => {
     return (
-        <SafeAreaView style={styles.safeArea}>
-            <DadosProvider valueOF={valueOF}>
-                <ProcessosContent valueOF={valueOF} />
-            </DadosProvider>
+        <SafeAreaView style={globalStyles.safeArea}>
+            <ProcessosContent />
         </SafeAreaView>
     );
 };
 
-const colors = {
-    primary: '#09A08D',
-    white: '#FFFFFF',
-    grey: '#F5F5F5',
-    dark: '#333',
-    medium: '#666',
-    light: '#888',
-    blue: '#3f51b5',
-};
+
 
 const styles = StyleSheet.create({
-    safeArea: {
-        flex: 1,
-        backgroundColor: colors.grey,
-    },
-    container: {
-        flex: 1,
-        padding: 16,
-    },
-    header: {
-        marginBottom: 16,
-    },
-    headerTitle: {
-        fontSize: 22,
-        fontWeight: 'bold',
-        color: colors.dark,
-    },
+
     itemContainer: {
         marginBottom: 12,
         backgroundColor: colors.white,

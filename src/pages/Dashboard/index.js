@@ -25,7 +25,10 @@ const Dashboard = ({ navigation, route }) => {
                     <View style={styles.headerContainer}>
                         <MaterialCommunityIcons name="account-circle-outline" color="#09A08D" size={35} style={styles.icon} />
                         <View style={styles.userInfo}>
-                            <Text style={styles.title}>{route.params?.usuario}</Text>
+                            <View style={styles.userInfoContainer}>
+                                <Text style={styles.title}>{route.params?.usuario}</Text>
+                                {permissao && <Text style={styles.permission}>({permissao})</Text>}
+                            </View>
                             <Text style={styles.number}>ID: 1234</Text>
                         </View>
                     </View>
@@ -39,20 +42,20 @@ const Dashboard = ({ navigation, route }) => {
                     onPress={() => handlePress('FiltroOrdensFab')}
                     title="Ordens de Fabricação e Apontamentos"
                     imageSource={require('../../assets/ordemFab.png')}
-                    backgroundColor="#09A08D"
+                    backgroundColor={['#09A08D', '#0e6c60']}
                 />
                 <DashboardButton
                     onPress={() => handlePress('#')}
                     title="Produtos e Materiais"
                     imageSource={require('../../assets/prodMateriais.png')}
-                    backgroundColor="#bbb"
+                    backgroundColor={['#525252', '#a0a0a0']}
                     reverse
                 />
                 <DashboardButton
                     onPress={() => handlePress('#')}
                     title="Pedidos"
                     imageSource={require('../../assets/pedidos.png')}
-                    backgroundColor="#09A08D"
+                    backgroundColor={['#09A08D', '#0e6c60']}
                 />
             </View>
         </View>
@@ -102,8 +105,18 @@ const styles = StyleSheet.create({
     userInfo: {
         flex: 1,
     },
+    userInfoContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
     title: {
         fontSize: 24,
+        fontWeight: 'bold',
+        color: '#000',
+    },
+    permission: {
+        fontSize: 16,
         fontWeight: 'bold',
         color: '#000',
     },
