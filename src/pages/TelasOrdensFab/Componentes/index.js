@@ -42,7 +42,10 @@ const ComponentesContent = () => {
     }
 
     if (!dados?.ordem?.componentes || dados.ordem.componentes.length === 0) {
-        return <Text style={styles.noDataText}>Nenhum componente disponível.</Text>;
+        return (<View style={styles.noDataTextContainer}>
+            <Text style={styles.noDataText}>Nenhum componente disponível.</Text>
+        </View>
+        );
     }
 
     return (
@@ -125,11 +128,14 @@ const styles = StyleSheet.create({
         marginTop: 20,
     },
     noDataText: {
-        fontSize: 16,
+        fontSize: 18,
         color: colors.dark,
-        textAlign: 'center',
-        marginTop: 20,
     },
+    noDataTextContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    }
 });
 
 export default Componentes;

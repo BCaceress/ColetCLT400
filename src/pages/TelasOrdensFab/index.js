@@ -11,8 +11,49 @@ import {
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import api from '../../services/api';
 
-const TelasOrdensFab = ({ route, navigation }) => {
+// Memoize item rendering to avoid unnecessary re-renders
+const ListItem = React.memo(({ item, getStatusColor, navigation }) => (
+  <View style={styles.itemWrapper}>
+    <View style={[styles.colorBar, { backgroundColor: getStatusColor(item.status) }]} />
+    <View style={styles.itemContainer}>
+      <TouchableOpacity onPress={() => navigation.navigate('Tab', { valueOF: item.numero_ordem })}>
+        <View style={styles.headerContainer}>
+          <Text style={styles.category}>
+            <MaterialCommunityIcons name="file-document" color="#888" size={17} />
+            OF: <Text style={styles.boldText}>{item.numero_ordem}</Text> Total: {item.quantidade} PC | Pronta: {item.quantidade_pronta} PC
+          </Text>
+          <Text style={[styles.status, { color: getStatusColor(item.status) }]}>
+            <MaterialCommunityIcons name="circle" color={getStatusColor(item.status)} size={12} />
+            {item.status}
+          </Text>
+        </View>
+        <View style={styles.titleContainer}>
+          <Text style={styles.title}>
+            {item.referencia} - {item.produto}
+          </Text>
+          {item.status === 'Interrompida' && item.sequenciamento && item.sequenciamento.length > 0 && (
+            <Text style={styles.sequenciadoLabel}>Sequenciada</Text>
+          )}
+        </View>
+        <View style={styles.footerContainer}>
+          {item.status !== "Aguardando" && item.status !== "Interrompida" && item.status !== "Concluida" && (
+            <Text style={styles.sequenciado}>{item.status}: {item.etapas_em_andamento[0]?.processo} | {item.etapas_em_andamento[0]?.posto} | {item.etapas_em_andamento[0]?.operador}</Text>
+          )}
+          {item.status === 'Concluida' && (
+            <Text style={styles.sequenciado}> {item.status}: {item.data_conclusao} | {item.usuario_conclusao}</Text>
+          )}
+          {(item.status === 'Produzindo' && item.etapas_em_andamento.length > 1) && (
+            <Text style={styles.qtde}>
+              <MaterialCommunityIcons name="plus-circle" color="#000" size={19} />
+            </Text>
+          )}
+        </View>
+      </TouchableOpacity>
+    </View>
+  </View>
+));
 
+const TelasOrdensFab = ({ route, navigation }) => {
   const [OF, setOF] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -24,7 +65,7 @@ const TelasOrdensFab = ({ route, navigation }) => {
     fetchData();
   }, [selected, variavel]);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
@@ -42,7 +83,7 @@ const TelasOrdensFab = ({ route, navigation }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selected, variavel]);
 
   const filteredData = useMemo(() => {
     if (selectedPost === 'Todos') {
@@ -64,44 +105,6 @@ const TelasOrdensFab = ({ route, navigation }) => {
       default: return '#888';
     }
   }, []);
-
-  const renderItem = useCallback(({ item }) => (
-    <View style={styles.itemWrapper}>
-      <View style={[styles.colorBar, { backgroundColor: getStatusColor(item.status) }]} />
-      <View style={styles.itemContainer}>
-        <TouchableOpacity onPress={() => navigation.navigate('Tab', { valueOF: item.numero_ordem })}>
-          <View style={styles.headerContainer}>
-            <Text style={styles.category}>
-              <MaterialCommunityIcons name="file-document" color="#888" size={17} />
-              OF: <Text style={styles.boldText}>{item.numero_ordem}</Text> Total: {item.quantidade} PC | Pronta: {item.quantidade_pronta} PC
-            </Text>
-            <Text style={[styles.status, { color: getStatusColor(item.status) }]}>
-              <MaterialCommunityIcons name="circle" color={getStatusColor(item.status)} size={12} />
-              {item.status}
-            </Text>
-          </View>
-          <View style={styles.titleContainer}>
-            <Text style={styles.title}>
-              {item.referencia} - {item.produto}
-            </Text>
-            {item.status === 'Interrompida' && item.sequenciamento && item.sequenciamento.length > 0 && (
-              <Text style={styles.sequenciadoLabel}>Sequenciada</Text>
-            )}
-          </View>
-          {item.status !== "Aguardando" && item.status !== "Interrompida" && (
-            <View style={styles.footerContainer}>
-              <Text style={styles.sequenciado}>{item.status}: {item.etapas_em_andamento[0]?.processo} | {item.etapas_em_andamento[0]?.posto} | {item.etapas_em_andamento[0]?.operador}</Text>
-              {(item.status === 'Produzindo' && item.etapas_em_andamento.length > 1) && (
-                <Text style={styles.qtde}>
-                  <MaterialCommunityIcons name="plus-circle" color="#000" size={19} />
-                </Text>
-              )}
-            </View>
-          )}
-        </TouchableOpacity>
-      </View>
-    </View>
-  ), [getStatusColor, navigation]);
 
   const postos = useMemo(() => {
     const allPostos = OF.flatMap(item =>
@@ -157,7 +160,7 @@ const TelasOrdensFab = ({ route, navigation }) => {
 
       <FlatList
         data={filteredData}
-        renderItem={renderItem}
+        renderItem={({ item }) => <ListItem item={item} getStatusColor={getStatusColor} navigation={navigation} />}
         keyExtractor={item => item.numero_ordem.toString()}
         contentContainerStyle={styles.listContainer}
         style={styles.flatList}

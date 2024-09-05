@@ -1,7 +1,12 @@
-import React from 'react';
+import { useNavigation } from '@react-navigation/native';
+import React, { useEffect, useState } from 'react';
 import {
     ActivityIndicator,
+    Alert,
     FlatList,
+    Image,
+    Modal,
+    Pressable,
     StyleSheet,
     Text,
     TouchableOpacity,
@@ -11,7 +16,6 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import { useDados } from '../../../contexts/DadosContext';
 import { colors, globalStyles } from "../../../styles/globalStyles";
 
-// Função para obter a cor do status
 const getStatusColor = (status) => {
     switch (status) {
         case 'Aguardando':
@@ -30,6 +34,22 @@ const getStatusColor = (status) => {
 
 const DadosGeraisContent = () => {
     const { dados, isLoading } = useDados();
+    const navigation = useNavigation();
+    const [modalVisible, setModalVisible] = useState(false);
+    const [selectedImage, setSelectedImage] = useState(null);
+
+    useEffect(() => {
+        if (dados?.error) {
+            Alert.alert(
+                'Erro',
+                dados.error,
+                [
+                    { text: 'Voltar', onPress: () => navigation.goBack() },
+                ]
+            );
+        }
+    }, [dados?.error, navigation]);
+
     const statusColor = getStatusColor(dados?.ordem?.status);
 
     if (isLoading) {
@@ -52,7 +72,6 @@ const DadosGeraisContent = () => {
     const renderPedidoItem = ({ item }) => (
         <View style={styles.pedidoCard}>
             <View style={styles.pedidoHeader}>
-                {/* <MaterialCommunityIcons name="numeric-1-circle" size={40} color="#09A08D" /> */}
                 <View style={styles.pedidoInfo}>
                     <Text style={styles.pedidoTitle}>{item.referencia} - {item.nome_referencia}</Text>
                     <Text style={styles.pedidoSubtitle}>Pedido: {item.pedido}.{item.linha}  •  Cliente: {item.cliente}  •  Qtde: {item.quantidade} {item.unidade}</Text>
@@ -71,6 +90,21 @@ const DadosGeraisContent = () => {
         </View>
     );
 
+    const renderImageItem = ({ item }) => (
+        <Pressable
+            onPress={() => {
+                setSelectedImage(item.url);
+                setModalVisible(true);
+            }}
+            style={styles.imageContainer}
+        >
+            <Image
+                source={{ uri: item.url }}
+                style={styles.image}
+                resizeMode="cover" // Ajuste conforme necessário
+            />
+        </Pressable>
+    );
     return (
         <View style={globalStyles.container}>
             <View style={globalStyles.header}>
@@ -111,12 +145,12 @@ const DadosGeraisContent = () => {
             </View>
 
             <View style={styles.verticalContainer}>
-                {renderVerticalItem("calendar-edit", 'Geração', dados?.ordem?.data_geracao, `por: ${dados?.ordem?.usuario_geracao}`)}
+                {renderVerticalItem("calendar-edit", 'Geração', dados?.ordem?.data_geracao, dados?.ordem?.usuario_geracao)}
                 {renderVerticalItem("calendar-clock", 'Programação', dados?.ordem?.data_programacao)}
-                {renderVerticalItem("calendar-check", 'Conclusão', dados?.ordem?.data_conclusao, `por: ${dados?.ordem?.usuario_conclusao}`)}
+                {renderVerticalItem("calendar-check", 'Conclusão', dados?.ordem?.data_conclusao, dados?.ordem?.usuario_conclusao)}
             </View>
 
-            <View style={styles.pedidosContainer}>
+            <View>
                 <Text style={styles.pedidosTitle}>Pedidos Vinculados</Text>
                 {dados?.ordem?.pedidos?.length > 0 ? (
                     <FlatList
@@ -130,6 +164,41 @@ const DadosGeraisContent = () => {
                     </View>
                 )}
             </View>
+
+            <View style={styles.galleryContainer}>
+                {dados?.ordem?.imagens?.length > 0 ? (
+                    <>
+                        <Text style={styles.galleryTitle}>Imagens</Text>
+                        <FlatList
+                            data={dados.ordem.imagens}
+                            renderItem={renderImageItem}
+                            keyExtractor={(item) => item.url}
+                            horizontal
+                            showsHorizontalScrollIndicator={false}
+                        />
+                    </>
+                ) : (
+                    null
+                )}
+            </View>
+
+            {selectedImage && (
+                <Modal
+                    visible={modalVisible}
+                    transparent={true}
+                    onRequestClose={() => setModalVisible(false)}
+                >
+                    <Pressable
+                        style={styles.modalBackground}
+                        onPress={() => setModalVisible(false)}
+                    >
+                        <Image
+                            source={{ uri: selectedImage }}
+                            style={styles.modalImage}
+                        />
+                    </Pressable>
+                </Modal>
+            )}
         </View>
     );
 };
@@ -142,9 +211,7 @@ const DadosGerais = () => {
     );
 };
 
-
 const styles = StyleSheet.create({
-
     containerHeader: {
         backgroundColor: colors.white,
         padding: 15,
@@ -284,22 +351,14 @@ const styles = StyleSheet.create({
     verticalDate: {
         fontSize: 14,
         color: colors.medium,
+        marginTop: 2,
     },
     verticalUser: {
         fontSize: 12,
         color: colors.light,
-        marginTop: 5,
+        marginTop: 1,
     },
-    // pedidosContainer: {
-    //     backgroundColor: colors.white,
-    //     borderRadius: 8,
-    //     padding: 15,
-    //     shadowColor: colors.dark,
-    //     shadowOffset: { width: 0, height: 10 },
-    //     shadowOpacity: 0.1,
-    //     shadowRadius: 20,
-    //     elevation: 5,
-    // },
+
     pedidosTitle: {
         fontSize: 20,
         fontWeight: '700',
@@ -365,10 +424,6 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         paddingHorizontal: 8, paddingVertical: 3
     },
-    pedidoRatingContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
     pedidoDetailsText: {
         fontSize: 14,
         color: '#fff',
@@ -381,7 +436,37 @@ const styles = StyleSheet.create({
     },
     noPedidosText: {
         color: '#aaa',
-    }
+    },
+    galleryContainer: {
+        marginTop: 20,
+    },
+    galleryTitle: {
+        fontSize: 20,
+        fontWeight: '700',
+        color: colors.dark,
+        marginBottom: 15,
+    },
+    imageContainer: {
+        marginRight: 10,
+    },
+    image: {
+        width: 100,
+        height: 100,
+        borderRadius: 10,
+        borderWidth: 1,
+        borderColor: '#ddd',
+    },
+    modalBackground: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    },
+    modalImage: {
+        width: '100%',
+        height: '100%',
+        resizeMode: 'contain',
+    },
 });
 
 export default DadosGerais;

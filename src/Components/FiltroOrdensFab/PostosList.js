@@ -1,5 +1,5 @@
 import { useNavigation } from '@react-navigation/native';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { FlatList, Pressable, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import permissaoUsuarios from '../../hooks/permissaoUsuarios';
@@ -36,16 +36,11 @@ const PostosList = ({ dataList, onApontamentosToggle }) => {
 
     const handleItemPress = (codigoPosto) => {
         if (permissao === 'A' || isApontamentosActive) {
-            // Allow only one item to be selected
             setSelectedItems([codigoPosto]);
         } else {
             setSelectedItems(prevSelectedItems => {
                 const isSelected = prevSelectedItems.includes(codigoPosto);
-                if (isSelected) {
-                    return prevSelectedItems.filter(item => item !== codigoPosto);
-                } else {
-                    return [...prevSelectedItems, codigoPosto];
-                }
+                return isSelected ? prevSelectedItems.filter(item => item !== codigoPosto) : [...prevSelectedItems, codigoPosto];
             });
         }
     };
@@ -68,38 +63,37 @@ const PostosList = ({ dataList, onApontamentosToggle }) => {
             const newState = !prevState;
             onApontamentosToggle(newState);
             if (newState) {
-                // Remove all selected items when apontamentos is activated
                 setSelectedItems([]);
             }
             return newState;
         });
     };
 
-    const renderItem = ({ item }) => (
+    const RenderItem = React.memo(({ item, onPress, isSelected }) => (
         <Pressable
             style={({ pressed }) => [
                 styles.item,
-                selectedItems.includes(item.CODIGO_POSTO) ? styles.selectedItem : {},
+                isSelected ? styles.selectedItem : {},
                 pressed ? styles.pressedItem : {},
             ]}
-            onPress={() => handleItemPress(item.CODIGO_POSTO)}
+            onPress={() => onPress(item.CODIGO_POSTO)}
         >
             <Text style={[
                 styles.itemText,
-                selectedItems.includes(item.CODIGO_POSTO) ? styles.selectedItemText : {}
+                isSelected ? styles.selectedItemText : {}
             ]}>
                 {item.DESCRICAO} ({item.CODIGO_POSTO})
             </Text>
-            {selectedItems.includes(item.CODIGO_POSTO) && (
+            {isSelected && (
                 <MaterialCommunityIcons name="check" size={23} color="#00C853" />
             )}
         </Pressable>
-    );
+    ));
 
     return (
         <View style={styles.container}>
             <View style={styles.headerContainer}>
-                <View style={[styles.searchContainer, { flex: permissao === 'A' ? 3 : 1 }]}>
+                <View style={[styles.searchContainer, { flex: permissao === 'A' || isApontamentosActive ? 3 : 1 }]}>
                     <MaterialCommunityIcons name="magnify" size={20} color="#666" style={styles.icon} />
                     <TextInput
                         style={styles.textInput}
@@ -110,18 +104,22 @@ const PostosList = ({ dataList, onApontamentosToggle }) => {
                     />
                 </View>
                 <View style={styles.buttonContainer}>
-                    <TouchableOpacity
-                        style={styles.iconButton}
-                        onPress={handleSelectAll}
-                    >
-                        <MaterialCommunityIcons name="checkbox-marked-outline" size={24} color="#333" />
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={styles.iconButton}
-                        onPress={handleDeselectAll}
-                    >
-                        <MaterialCommunityIcons name="checkbox-blank-off-outline" size={24} color="#333" />
-                    </TouchableOpacity>
+                    {!isApontamentosActive && permissao !== 'A' && (
+                        <>
+                            <TouchableOpacity
+                                style={styles.iconButton}
+                                onPress={handleSelectAll}
+                            >
+                                <MaterialCommunityIcons name="checkbox-marked-outline" size={24} color="#333" />
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={styles.iconButton}
+                                onPress={handleDeselectAll}
+                            >
+                                <MaterialCommunityIcons name="checkbox-blank-off-outline" size={24} color="#333" />
+                            </TouchableOpacity>
+                        </>
+                    )}
                     {permissao !== 'A' && (
                         <TouchableOpacity
                             style={styles.apontamentosButton(isApontamentosActive)}
@@ -138,7 +136,13 @@ const PostosList = ({ dataList, onApontamentosToggle }) => {
             <FlatList
                 data={filteredData}
                 keyExtractor={item => item.CODIGO_POSTO}
-                renderItem={renderItem}
+                renderItem={({ item }) => (
+                    <RenderItem
+                        item={item}
+                        onPress={handleItemPress}
+                        isSelected={selectedItems.includes(item.CODIGO_POSTO)}
+                    />
+                )}
                 contentContainerStyle={styles.flatList}
             />
 
@@ -177,8 +181,7 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.1,
         shadowRadius: 4,
         elevation: 2,
-        marginStart: 14,
-        marginEnd: 14
+        marginHorizontal: 14,
     },
     selectedItem: {
         backgroundColor: '#E8F5E9',
@@ -199,12 +202,11 @@ const styles = StyleSheet.create({
     },
     submitButton: {
         backgroundColor: '#00796B',
-        padding: 15,
+        padding: 16,
         alignItems: 'center',
         justifyContent: 'center',
-        marginStart: 14,
-        marginEnd: 14,
-        borderRadius: 15
+        marginHorizontal: 14,
+        borderRadius: 15,
     },
     submitButtonText: {
         color: '#FFFFFF',

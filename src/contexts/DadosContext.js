@@ -15,7 +15,12 @@ export function DadosProvider({ children, valueOF }) {
         setDados(response.data);
       } catch (error) {
         console.error('Erro ao obter dados da API:', error);
-        setDados({ error: 'Não foi possível obter os dados. Por favor, tente novamente mais tarde.' });
+
+        if (error.response && error.response.status === 500) {
+          setDados({ error: 'Ocorreu um erro no servidor. Por favor, tente novamente mais tarde.' });
+        } else {
+          setDados({ error: 'Não foi possível obter os dados. Verifique sua conexão e tente novamente.' });
+        }
       } finally {
         setIsLoading(false);
       }
