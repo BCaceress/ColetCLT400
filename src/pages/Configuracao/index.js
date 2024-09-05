@@ -22,11 +22,12 @@ const Configuracao = () => {
     const [deviceDetails, setDeviceDetails] = useState('');
     const [uniqueId, setUniqueId] = useState('');
     const [isPostosLoading, setIsPostosLoading] = useState(true);
+    const [errorMessage, setErrorMessage] = useState('');
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                setIsPostosLoading(true); // Inicia o carregamento dos postos
+                setIsPostosLoading(true);
                 const savedConnection = await AsyncStorage.getItem('@MyApp:connection');
                 setConnection(savedConnection || '');
                 const device = await DeviceInformation.getDeviceName();
@@ -40,13 +41,15 @@ const Configuracao = () => {
                 if (response.status === 200 && response.data?.postos) {
                     const postosFromApi = response.data.postos.map(posto => posto.CODIGO_POSTO);
                     setPostos(postosFromApi);
+                    setErrorMessage('');
                 } else {
-                    console.error('Erro ao obter dados dos postos:', response.data?.mensagem || 'Dados inválidos.');
+                    setErrorMessage('Erro ao obter dados dos postos: Dados inválidos.');
                 }
             } catch (error) {
                 console.error('Erro ao recuperar os dados:', error);
+                setErrorMessage('Postos não localizados.');
             } finally {
-                setIsPostosLoading(false); // Finaliza o carregamento dos postos
+                setIsPostosLoading(false);
             }
         };
         fetchData();
@@ -110,6 +113,10 @@ const Configuracao = () => {
                 {isPostosLoading ? (
                     <View style={styles.loadingContainer}>
                         <ActivityIndicator size="large" color="#09A08D" />
+                    </View>
+                ) : errorMessage ? (
+                    <View style={styles.errorContainer}>
+                        <Text style={styles.errorMessage}>{errorMessage}</Text>
                     </View>
                 ) : (
                     <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -202,7 +209,7 @@ const styles = StyleSheet.create({
         borderRadius: 15,
         paddingHorizontal: 10,
         paddingVertical: 5,
-        marginRight: 10,  // Use marginRight for horizontal spacing
+        marginRight: 10,
     },
     badgeText: {
         color: 'white',
@@ -251,6 +258,17 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
+    },
+    errorContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    errorMessage: {
+        color: '#666',
+        fontSize: 14,
+        textAlign: 'center',
+        padding: 10,
     },
 });
 

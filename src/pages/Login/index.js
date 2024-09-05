@@ -37,7 +37,7 @@ const useDeviceInfo = () => {
   return { infoDispositivo, acessoApp, getIDeAPI };
 };
 
-const useLogin = (usuario, senha) => {
+const useLogin = (usuario, senha, setErrorMessage) => {
   const acessoLogin = useCallback(async (navigation) => {
     const data = {
       usuario,
@@ -49,13 +49,15 @@ const useLogin = (usuario, senha) => {
       if (response.status === 200) {
         await AsyncStorage.setItem('@MyApp:permissao', response.data.permissao);
         navigation.navigate('Dashboard', { usuario: response.data.usuario });
+      } else if (response.status === 401) {
+        setErrorMessage('Usuário ou senha incorretos.');
       } else {
-        alert('Erro ao fazer login. Verifique suas credenciais.');
+        setErrorMessage('Erro ao fazer login. Tente novamente.');
       }
     } catch (error) {
-      alert('Erro ao se conectar à API. Verifique sua conexão de rede.');
+      setErrorMessage('Erro ao se conectar à API. Verifique sua conexão de rede.');
     }
-  }, [usuario, senha]);
+  }, [usuario, senha, setErrorMessage]);
 
   return acessoLogin;
 };
@@ -83,8 +85,9 @@ const Login = ({ navigation }) => {
   const [usuario, setUsuario] = useState('duploz');
   const [senha, setSenha] = useState('yp0p0th@m');
   const [showPassword, setShowPassword] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(''); // Estado para armazenar mensagens de erro
   const { infoDispositivo, acessoApp, getIDeAPI } = useDeviceInfo();
-  const acessoLogin = useLogin(usuario, senha);
+  const acessoLogin = useLogin(usuario, senha, setErrorMessage);
   const isFocused = useIsFocused();
 
   useEffect(() => {
@@ -109,6 +112,9 @@ const Login = ({ navigation }) => {
             <Text style={styles.titleHighlight}> CLT 400</Text>
           </Text>
           <Text style={styles.subtitle}>Faça o login abaixo para acessar.</Text>
+          {errorMessage ? (
+            <Text style={styles.errorMessage}>{errorMessage}</Text>
+          ) : null}
           <TextInput
             style={styles.input}
             placeholder="Digite o usuário"
@@ -157,7 +163,7 @@ const Login = ({ navigation }) => {
           </TouchableOpacity>
         </View>
         <View style={styles.footerContainer}>
-          <Text style={styles.versionText}>{infoDispositivo.mensagem} - Versão 1.00.0000</Text>
+          <Text style={styles.versionText}>{infoDispositivo.mensagem || 'Dispositivo sem acesso'} - Versão 1.00.0000</Text>
           <TouchableOpacity
             style={styles.configButton}
             onPress={() => navigation.navigate('Configuracao')}
@@ -270,6 +276,12 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  errorMessage: {
+    color: '#D9534F', // Cor vermelha para erros
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 15,
   },
   footerContainer: {
     alignItems: 'center',

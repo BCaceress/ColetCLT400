@@ -5,6 +5,7 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 
 export const ModalNaoIniciado = ({ visible, onClose, postos, acao, onConfirm }) => {
     const [selectedPosto, setSelectedPosto] = useState('');
+    const [operadorCodigo, setOperadorCodigo] = useState('');
 
     return (
         <Modal
@@ -21,6 +22,8 @@ export const ModalNaoIniciado = ({ visible, onClose, postos, acao, onConfirm }) 
                         </TouchableOpacity>
                     </View>
                     <Text style={styles.modalText}>Ação: {acao}</Text>
+
+                    <Text style={styles.label}>Posto</Text>
                     <View style={styles.pickerContainer}>
                         <Picker
                             selectedValue={selectedPosto}
@@ -41,9 +44,19 @@ export const ModalNaoIniciado = ({ visible, onClose, postos, acao, onConfirm }) 
                             )}
                         </Picker>
                     </View>
+
+                    <Text style={styles.label}>Código do Operador</Text>
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Código do Operador"
+                        value={operadorCodigo}
+                        onChangeText={setOperadorCodigo}
+                        placeholderTextColor="#666"
+                    />
+
                     <TouchableOpacity
                         style={styles.confirmButton}
-                        onPress={() => onConfirm(selectedPosto)}
+                        onPress={() => onConfirm(selectedPosto, operadorCodigo)}
                     >
                         <Text style={styles.buttonText}>Confirmar</Text>
                     </TouchableOpacity>
@@ -77,20 +90,8 @@ export const ModalProduzindo = ({ visible, onClose, postos, acao, onConfirm }) =
                         </TouchableOpacity>
                     </View>
                     <Text style={styles.modalText}>Ação: {acao}</Text>
-                    <View style={styles.actionContainer}>
-                        <ActionButton
-                            title="Pause"
-                            icon="pause"
-                            isSelected={selectedAction === 'Pause'}
-                            onPress={() => setSelectedAction('Pause')}
-                        />
-                        <ActionButton
-                            title="Stop"
-                            icon="stop"
-                            isSelected={selectedAction === 'Stop'}
-                            onPress={() => setSelectedAction('Stop')}
-                        />
-                    </View>
+
+                    <Text style={styles.label}>Posto</Text>
                     <View style={styles.pickerContainer}>
                         <Picker
                             selectedValue={selectedPosto}
@@ -111,6 +112,8 @@ export const ModalProduzindo = ({ visible, onClose, postos, acao, onConfirm }) =
                             )}
                         </Picker>
                     </View>
+
+                    <Text style={styles.label}>Código do Operador</Text>
                     <TextInput
                         style={styles.input}
                         placeholder="Código do Operador"
@@ -118,6 +121,8 @@ export const ModalProduzindo = ({ visible, onClose, postos, acao, onConfirm }) =
                         onChangeText={setOperadorCodigo}
                         placeholderTextColor="#666"
                     />
+
+                    <Text style={styles.label}>Quantidade Produzida</Text>
                     <TextInput
                         style={styles.input}
                         placeholder="Quantidade Produzida"
@@ -126,8 +131,10 @@ export const ModalProduzindo = ({ visible, onClose, postos, acao, onConfirm }) =
                         placeholderTextColor="#666"
                         keyboardType="numeric"
                     />
+
                     {showQuebraInput && (
                         <>
+                            <Text style={styles.label}>Motivo da Quebra</Text>
                             <TextInput
                                 style={styles.input}
                                 placeholder="Motivo da Quebra"
@@ -135,6 +142,7 @@ export const ModalProduzindo = ({ visible, onClose, postos, acao, onConfirm }) =
                                 onChangeText={setMotivoQuebra}
                                 placeholderTextColor="#666"
                             />
+                            <Text style={styles.label}>Quantidade de Quebra</Text>
                             <TextInput
                                 style={styles.input}
                                 placeholder="Quantidade de Quebra"
@@ -145,6 +153,21 @@ export const ModalProduzindo = ({ visible, onClose, postos, acao, onConfirm }) =
                             />
                         </>
                     )}
+
+                    <View style={styles.actionContainer}>
+                        <ActionButton
+                            title="Pause"
+                            icon="pause"
+                            isSelected={selectedAction === 'Pause'}
+                            onPress={() => setSelectedAction('Pause')}
+                        />
+                        <ActionButton
+                            title="Stop"
+                            icon="stop"
+                            isSelected={selectedAction === 'Stop'}
+                            onPress={() => setSelectedAction('Stop')}
+                        />
+                    </View>
 
                     <TouchableOpacity
                         style={styles.confirmButton}
@@ -213,6 +236,12 @@ const styles = StyleSheet.create({
         color: '#666',
         marginBottom: 20,
     },
+    label: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#333',
+        marginBottom: 8,
+    },
     input: {
         width: '100%',
         padding: 12,
@@ -238,9 +267,6 @@ const styles = StyleSheet.create({
     },
     pickerItem: {
         color: '#333',
-    },
-    buttonContainer: {
-        marginTop: 20,
     },
     actionContainer: {
         flexDirection: 'row',
@@ -270,13 +296,6 @@ const styles = StyleSheet.create({
     },
     actionTextSelected: {
         color: '#09A08D',
-    },
-    cancelButton: {
-        backgroundColor: '#FF0000',
-        padding: 10,
-        borderRadius: 8,
-        width: '48%',
-        alignItems: 'center',
     },
     confirmButton: {
         backgroundColor: '#09A08D',
