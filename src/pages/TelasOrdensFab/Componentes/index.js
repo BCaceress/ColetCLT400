@@ -12,15 +12,15 @@ import { useDados } from '../../../contexts/DadosContext';
 import { colors, globalStyles } from "../../../styles/globalStyles";
 const { width } = Dimensions.get('window');
 
-const renderComponenteItem = ({ item }) => (
+const renderComponenteItem = ({ item, index }) => (
     <View style={styles.componenteContainer}>
         <View style={styles.infoContainer}>
             <View style={styles.unitContainer}>
-                <Text style={styles.unitText}>{item.unidade}</Text>
+                <Text style={styles.unitText}>{(index + 1).toString().padStart(2, '0')}</Text>
             </View>
             <View style={styles.textContainer}>
-                <Text style={styles.componenteName}>{item.nome} {item.referencia}</Text>
-                <Text style={styles.componenteDetails}>Qntd: {item.quantidade}  |  Qntd Separada: {item.quantidade_separada}  |  Qntd Estoque: {item.quantidade_estoque}</Text>
+                <Text style={styles.componenteName}>{item.referencia} - {item.nome} </Text>
+                <Text style={styles.componenteDetails}>Qtde: {item.quantidade} {item.unidade} |  Qtde Separada: {item.quantidade_separada} {item.unidade} |  Qtde Estoque: {item.quantidade_estoque} {item.unidade}</Text>
             </View>
         </View>
     </View>

@@ -47,9 +47,9 @@ const DetailsTab = ({ item }) => {
                 <>
                     <Text style={styles.tabText}>Recurso: {detalhes.tipo_recurso}</Text>
                     <Text style={styles.tabText}>Setor: {detalhes.setor}</Text>
-                    <Text style={styles.tabText}>Descrição: {detalhes.descricao_detalhada}</Text>
                     <Text style={styles.tabText}>Complemento: {detalhes.complemento}</Text>
                     <Text style={styles.tabText}>Tempo de Processo: {detalhes.tempo_processo}</Text>
+                    <Text style={styles.tabText}>Descrição: {detalhes.descricao_detalhada}</Text>
                 </>
             ) : (
                 <Text style={styles.tabText}>Nenhum detalhe disponível</Text>
@@ -76,6 +76,11 @@ const PageIndicator = ({ index, length }) => {
         />
     ));
     return <View style={styles.dotContainer}>{indicators}</View>;
+};
+
+const getUniqueStatuses = (processos) => {
+    const statuses = processos.map(processo => processo.status);
+    return [...new Set(statuses)];
 };
 
 const ExpandedContent = React.memo(({ item, currentPage, setCurrentPage }) => {
@@ -107,6 +112,50 @@ const ExpandedContent = React.memo(({ item, currentPage, setCurrentPage }) => {
     );
 });
 
+const statusConfigFilter = {
+    'Todos': { color: '#666', icon: 'view-list', text: 'Todos os Processos' },
+    'Não Iniciado': { color: '#FFB300', icon: 'play-circle-outline', text: 'Não Iniciado' },
+    'Produzindo': { color: '#1E90FF', icon: 'cog-play', text: 'Produzindo' },
+    'Processo Concluido': { color: '#09A08D', icon: 'check-circle-outline', text: 'Concluído' },
+    'Interrompido': { color: '#FF0000', icon: 'stop-circle-outline', text: 'Interrompido' },
+};
+
+const FilterButtons = ({ availableStatuses, selectedFilter, onFilterChange }) => (
+    <View style={styles.filterContainer}>
+        {availableStatuses.map((status) => {
+            const { color, icon, text } = statusConfigFilter[status] || { color: colors.grey, icon: 'filter', text: 'Filtro' };
+            const isActive = selectedFilter === status;
+            const textColor = isActive ? colors.white : color;
+
+            return (
+                <Pressable
+                    key={status}
+                    style={[
+                        styles.filterButton,
+                        isActive && styles.filterButtonActive
+                    ]}
+                    onPress={() => onFilterChange(status)}
+                >
+                    <MaterialCommunityIcons
+                        name={icon}
+                        size={20}
+                        color={textColor}
+                    />
+                    <Text
+                        style={[
+                            styles.filterButtonText,
+                            { color: textColor }
+                        ]}
+                    >
+                        {text}
+                    </Text>
+                </Pressable>
+            );
+        })}
+    </View>
+);
+
+
 const ProcessosContent = () => {
     const { dados, isLoading } = useDados();
     const processosLista = dados?.ordem?.processos || [];
@@ -114,19 +163,20 @@ const ProcessosContent = () => {
     const [currentPage, setCurrentPage] = useState({});
     const [modalVisible, setModalVisible] = useState(null);
     const [selectedProcess, setSelectedProcess] = useState(null);
+    const [selectedFilter, setSelectedFilter] = useState('Todos');
 
-    //const processoAtual = processosLista.find(processo => processo.status === modalVisible);
     const statusToModalMap = {
         'Não Iniciado': 'NaoIniciado',
         'Produzindo': 'Produzindo',
         'Processo Concluido': null,
         'Interrompido': null
     };
+
     const openModal = (modalType, process) => {
         setModalVisible(modalType);
         setSelectedProcess(process);
-        console.log(process.postos_possiveis);
     };
+
     const processoAtual = processosLista.find(processo =>
         statusToModalMap[processo.status] === modalVisible
     );
@@ -136,8 +186,25 @@ const ProcessosContent = () => {
         setSelectedProcess(null);
     };
 
+    const handleFilterChange = (status) => {
+        setSelectedFilter(status);
+    };
+
+
+
+    const availableStatuses = useMemo(() => {
+        const statuses = getUniqueStatuses(processosLista);
+        return ['Todos', ...statuses];
+    }, [processosLista]);
+
+    const filteredProcessos = processosLista.filter((processo) => {
+        if (selectedFilter === 'Todos') {
+            return true;
+        }
+        return processo.status === selectedFilter;
+    });
+
     const renderItem = useCallback(({ item }) => {
-        // Exibir apenas itens com detalhes, acessórios ou componentes
         if (!(item.detalhes || item.acessorios?.length > 0 || item.componentes?.length > 0)) {
             return null;
         }
@@ -154,7 +221,7 @@ const ProcessosContent = () => {
             },
             'Não Iniciado': {
                 icon: 'play-circle-outline',
-                text: 'Pendente',
+                text: 'Não Iniciado',
                 color: '#FFB300',
                 modalType: 'NaoIniciado',
             },
@@ -166,7 +233,7 @@ const ProcessosContent = () => {
             },
             'Interrompido': {
                 icon: 'stop-circle-outline',
-                text: 'Parado',
+                text: 'Interrompido',
                 color: '#FF0000',
                 modalType: null,
             },
@@ -221,7 +288,7 @@ const ProcessosContent = () => {
                 )}
             </View>
         );
-    }, [expandedItemId, currentPage]);
+    }, [expandedItemId, currentPage, selectedFilter]);
 
     if (isLoading) {
         return (
@@ -231,7 +298,7 @@ const ProcessosContent = () => {
         );
     }
 
-    if (!processosLista.length) {
+    if (!filteredProcessos.length) {
         return (
             <View style={styles.loadingContainer}>
                 <Text style={styles.loadingText}>Nenhum processo disponível</Text>
@@ -244,9 +311,14 @@ const ProcessosContent = () => {
             <View style={globalStyles.header}>
                 <Text style={globalStyles.headerTitle}>Processos</Text>
             </View>
-            {processosLista.length > 0 ? (
+            <FilterButtons
+                availableStatuses={availableStatuses}
+                selectedFilter={selectedFilter}
+                onFilterChange={handleFilterChange}
+            />
+            {filteredProcessos.length > 0 ? (
                 <FlatList
-                    data={processosLista}
+                    data={filteredProcessos}
                     keyExtractor={(item) => item.processo.toString()}
                     renderItem={renderItem}
                     contentContainerStyle={styles.listContainer}
@@ -357,9 +429,10 @@ const styles = StyleSheet.create({
     },
     pagerPage: {
         flex: 1,
+        width: '96%',
     },
     tabContent: {
-        padding: 16,
+        padding: 10,
         backgroundColor: colors.white,
     },
     tabTitle: {
@@ -415,6 +488,41 @@ const styles = StyleSheet.create({
     },
     componentTag: {
         backgroundColor: '#fce4ec',
+    },
+    filterContainer: {
+        flexDirection: 'row',
+        justifyContent: 'flex-start',
+        marginBottom: 15,
+    },
+    filterButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 10,
+        paddingHorizontal: 16,
+        borderRadius: 25,
+        borderWidth: 1,
+        borderColor: colors.grey,
+        backgroundColor: colors.white,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        elevation: 5,
+        marginHorizontal: 5,
+        transition: 'background-color 0.3s ease',
+    },
+    filterButtonActive: {
+        backgroundColor: colors.primary,
+        borderColor: colors.primary,
+        shadowColor: colors.primary,
+        shadowOffset: { width: 0, height: 5 },
+        shadowOpacity: 0.3,
+        shadowRadius: 6,
+        elevation: 6,
+    },
+    filterButtonText: {
+        fontSize: 14,
+        marginLeft: 8,
     },
 });
 

@@ -43,7 +43,7 @@ const Configuracao = () => {
                     setPostos(postosFromApi);
                     setErrorMessage('');
                 } else {
-                    setErrorMessage('Erro ao obter dados dos postos: Dados inválidos.');
+                    setErrorMessage('Erro ao obter dados dos postos.');
                 }
             } catch (error) {
                 console.error('Erro ao recuperar os dados:', error);

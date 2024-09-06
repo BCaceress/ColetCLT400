@@ -12,6 +12,7 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import ImageViewer from 'react-native-image-zoom-viewer';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useDados } from '../../../contexts/DadosContext';
 import { colors, globalStyles } from "../../../styles/globalStyles";
@@ -36,7 +37,8 @@ const DadosGeraisContent = () => {
     const { dados, isLoading } = useDados();
     const navigation = useNavigation();
     const [modalVisible, setModalVisible] = useState(false);
-    const [selectedImage, setSelectedImage] = useState(null);
+    const [images, setImages] = useState([]);
+    const [initialIndex, setInitialIndex] = useState(0);
 
     useEffect(() => {
         if (dados?.error) {
@@ -49,6 +51,12 @@ const DadosGeraisContent = () => {
             );
         }
     }, [dados?.error, navigation]);
+
+    useEffect(() => {
+        if (dados?.ordem?.imagens) {
+            setImages(dados.ordem.imagens.map(img => ({ url: img.url })));
+        }
+    }, [dados]);
 
     const statusColor = getStatusColor(dados?.ordem?.status);
 
@@ -90,10 +98,10 @@ const DadosGeraisContent = () => {
         </View>
     );
 
-    const renderImageItem = ({ item }) => (
+    const renderImageItem = ({ item, index }) => (
         <Pressable
             onPress={() => {
-                setSelectedImage(item.url);
+                setInitialIndex(index);
                 setModalVisible(true);
             }}
             style={styles.imageContainer}
@@ -101,10 +109,11 @@ const DadosGeraisContent = () => {
             <Image
                 source={{ uri: item.url }}
                 style={styles.image}
-                resizeMode="cover" // Ajuste conforme necessário
+                resizeMode="cover"
             />
         </Pressable>
     );
+
     return (
         <View style={globalStyles.container}>
             <View style={globalStyles.header}>
@@ -130,15 +139,15 @@ const DadosGeraisContent = () => {
                 </Text>
                 <View style={styles.statsContainer}>
                     <View style={styles.statItem}>
-                        <Text style={styles.statValue}>{dados?.ordem?.quantidade}</Text>
+                        <Text style={styles.statValue}>{dados?.ordem?.quantidade} {dados?.ordem?.unidade}</Text>
                         <Text style={styles.statLabel}>Qntd da OF</Text>
                     </View>
                     <View style={styles.statItem}>
-                        <Text style={styles.statValue}>{dados?.ordem?.quantidade_pronta}</Text>
+                        <Text style={styles.statValue}>{dados?.ordem?.quantidade_pronta} {dados?.ordem?.unidade}</Text>
                         <Text style={styles.statLabel}>Qntd Pronta</Text>
                     </View>
                     <View style={[styles.statItem, styles.statItemLast]}>
-                        <Text style={styles.statValue}>{dados?.ordem?.qtde_ultima_etapa_conc}</Text>
+                        <Text style={styles.statValue}>{dados?.ordem?.qtde_ultima_etapa_conc} {dados?.ordem?.unidade}</Text>
                         <Text style={styles.statLabel}>Qntd a Produzir</Text>
                     </View>
                 </View>
@@ -182,7 +191,7 @@ const DadosGeraisContent = () => {
                 )}
             </View>
 
-            {selectedImage && (
+            {images.length > 0 && (
                 <Modal
                     visible={modalVisible}
                     transparent={true}
@@ -192,8 +201,11 @@ const DadosGeraisContent = () => {
                         style={styles.modalBackground}
                         onPress={() => setModalVisible(false)}
                     >
-                        <Image
-                            source={{ uri: selectedImage }}
+                        <ImageViewer
+                            imageUrls={images}
+                            index={initialIndex}
+                            enableSwipeDown={true}
+                            onSwipeDown={() => setModalVisible(false)}
                             style={styles.modalImage}
                         />
                     </Pressable>

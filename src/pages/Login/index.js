@@ -47,6 +47,7 @@ const useLogin = (usuario, senha, setErrorMessage) => {
       const apiInstance = await api();
       const response = await apiInstance.post(`/login`, data);
       if (response.status === 200) {
+        setErrorMessage('');
         await AsyncStorage.setItem('@MyApp:permissao', response.data.permissao);
         navigation.navigate('Dashboard', { usuario: response.data.usuario });
       } else if (response.status === 401) {
@@ -85,7 +86,7 @@ const Login = ({ navigation }) => {
   const [usuario, setUsuario] = useState('duploz');
   const [senha, setSenha] = useState('yp0p0th@m');
   const [showPassword, setShowPassword] = useState(false);
-  const [errorMessage, setErrorMessage] = useState(''); // Estado para armazenar mensagens de erro
+  const [errorMessage, setErrorMessage] = useState('');
   const { infoDispositivo, acessoApp, getIDeAPI } = useDeviceInfo();
   const acessoLogin = useLogin(usuario, senha, setErrorMessage);
   const isFocused = useIsFocused();
@@ -185,6 +186,7 @@ const styles = StyleSheet.create({
   logoContainer: {
     alignItems: 'center',
     marginVertical: 35,
+    flex: 1,
   },
   logo: {
     width: '100%',

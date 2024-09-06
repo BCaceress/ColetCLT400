@@ -18,7 +18,7 @@ const globalStyles = StyleSheet.create({
     },
     container: {
         flex: 1,
-        padding: 20,
+        padding: 18,
     },
     loadingContainer: {
         flex: 1,
