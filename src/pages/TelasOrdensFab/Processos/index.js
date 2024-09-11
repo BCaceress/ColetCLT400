@@ -118,6 +118,7 @@ const statusConfigFilter = {
     'Produzindo': { color: '#1E90FF', icon: 'cog-play', text: 'Produzindo' },
     'Processo Concluido': { color: '#09A08D', icon: 'check-circle-outline', text: 'Concluído' },
     'Interrompido': { color: '#FF0000', icon: 'stop-circle-outline', text: 'Interrompido' },
+    'S/Apontamento': { color: '#666', icon: 'stop-circle-outline', text: 'S/Apontamento' },
 };
 
 const FilterButtons = ({ availableStatuses, selectedFilter, onFilterChange }) => (
@@ -169,6 +170,7 @@ const ProcessosContent = () => {
         'Não Iniciado': 'NaoIniciado',
         'Produzindo': 'Produzindo',
         'Processo Concluido': null,
+        'S/Apontamento': null,
         'Interrompido': null
     };
 
@@ -237,6 +239,13 @@ const ProcessosContent = () => {
                 color: '#FF0000',
                 modalType: null,
             },
+            'S/Apontamento': {
+                icon: 'stop-circle-outline',
+                text: 'S/Apontamento',
+                color: '#666',
+                modalType: null,
+            },
+
         };
         const { icon, text, color, modalType } = statusConfig[item.status] || {};
 

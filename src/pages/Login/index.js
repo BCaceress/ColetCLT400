@@ -113,9 +113,6 @@ const Login = ({ navigation }) => {
             <Text style={styles.titleHighlight}> CLT 400</Text>
           </Text>
           <Text style={styles.subtitle}>Faça o login abaixo para acessar.</Text>
-          {errorMessage ? (
-            <Text style={styles.errorMessage}>{errorMessage}</Text>
-          ) : null}
           <TextInput
             style={styles.input}
             placeholder="Digite o usuário"
@@ -186,7 +183,6 @@ const styles = StyleSheet.create({
   logoContainer: {
     alignItems: 'center',
     marginVertical: 35,
-    flex: 1,
   },
   logo: {
     width: '100%',
@@ -278,12 +274,6 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontSize: 18,
     fontWeight: 'bold',
-  },
-  errorMessage: {
-    color: '#D9534F', // Cor vermelha para erros
-    fontSize: 16,
-    textAlign: 'center',
-    marginBottom: 15,
   },
   footerContainer: {
     alignItems: 'center',
