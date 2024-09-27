@@ -3,16 +3,19 @@ import {
     ActivityIndicator,
     Dimensions,
     FlatList,
+    Modal,
     Pressable,
     SafeAreaView,
     StyleSheet,
     Text,
+    TouchableOpacity,
     View
 } from 'react-native';
 import PagerView from 'react-native-pager-view';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { ModalNaoIniciado, ModalProduzindo } from '../../../components/ModaisProcessos';
 import { useDados } from '../../../contexts/DadosContext';
+import permissaoUsuarios from '../../../hooks/permissaoUsuarios';
 import { colors, globalStyles } from "../../../styles/globalStyles";
 
 const { width } = Dimensions.get('window');
@@ -37,6 +40,15 @@ const AccessoriesTab = ({ item }) => (
         )}
     />
 );
+const PostosTab = ({ item }) => (
+    <TabContent
+        title="Postos"
+        items={item.postos_possiveis || []}
+        itemRenderer={(posto_possivel, index) => (
+            <Text key={index} style={styles.tabText}>{posto_possivel.descricao}  ({posto_possivel.codigo_posto})</Text>
+        )}
+    />
+);
 
 const DetailsTab = ({ item }) => {
     const detalhes = item.detalhes;
@@ -48,7 +60,7 @@ const DetailsTab = ({ item }) => {
                     <Text style={styles.tabText}>Recurso: {detalhes.tipo_recurso}</Text>
                     <Text style={styles.tabText}>Setor: {detalhes.setor}</Text>
                     <Text style={styles.tabText}>Complemento: {detalhes.complemento}</Text>
-                    <Text style={styles.tabText}>Tempo de Processo: {detalhes.tempo_processo}</Text>
+                    <Text style={styles.tabText}>{detalhes.tempo_processo}</Text>
                     <Text style={styles.tabText}>Descrição: {detalhes.descricao_detalhada}</Text>
                 </>
             ) : (
@@ -89,6 +101,9 @@ const ExpandedContent = React.memo(({ item, currentPage, setCurrentPage }) => {
         if (item.detalhes) {
             pages.push(<View key="details" style={styles.pagerPage}><DetailsTab item={item} /></View>);
         }
+        if (item.postos_possiveis?.length > 0) {
+            pages.push(<View key="postos" style={styles.pagerPage}><PostosTab item={item} /></View>);
+        }
         if (item.acessorios?.length > 0) {
             pages.push(<View key="accessories" style={styles.pagerPage}><AccessoriesTab item={item} /></View>);
         }
@@ -121,50 +136,49 @@ const statusConfigFilter = {
     'S/Apontamento': { color: '#666', icon: 'stop-circle-outline', text: 'S/Apontamento' },
 };
 
-const FilterButtons = ({ availableStatuses, selectedFilter, onFilterChange }) => (
-    <View style={styles.filterContainer}>
-        {availableStatuses.map((status) => {
-            const { color, icon, text } = statusConfigFilter[status] || { color: colors.grey, icon: 'filter', text: 'Filtro' };
-            const isActive = selectedFilter === status;
-            const textColor = isActive ? colors.white : color;
-
-            return (
-                <Pressable
-                    key={status}
-                    style={[
-                        styles.filterButton,
-                        isActive && styles.filterButtonActive
-                    ]}
-                    onPress={() => onFilterChange(status)}
-                >
-                    <MaterialCommunityIcons
-                        name={icon}
-                        size={20}
-                        color={textColor}
-                    />
-                    <Text
-                        style={[
-                            styles.filterButtonText,
-                            { color: textColor }
-                        ]}
-                    >
-                        {text}
-                    </Text>
-                </Pressable>
-            );
-        })}
-    </View>
-);
-
 
 const ProcessosContent = () => {
+    const permission = permissaoUsuarios();
     const { dados, isLoading } = useDados();
     const processosLista = dados?.ordem?.processos || [];
     const [expandedItemId, setExpandedItemId] = useState(null);
     const [currentPage, setCurrentPage] = useState({});
     const [modalVisible, setModalVisible] = useState(null);
     const [selectedProcess, setSelectedProcess] = useState(null);
-    const [selectedFilter, setSelectedFilter] = useState('Todos');
+    const [selectedStatuses, setSelectedStatuses] = useState([
+        'Não Iniciado',
+        'Produzindo',
+        'Processo Concluido',
+        'Interrompido'
+    ]);
+    const [isFilterVisible, setIsFilterVisible] = useState(false);
+    const [modalValues, setModalValues] = useState({
+        numeroOrdem: null,
+        lote: null,
+        processo: null,
+    });
+
+
+    const availableStatuses = useMemo(() => {
+        const statuses = getUniqueStatuses(processosLista);
+        if (permission === 'A') {
+            return statuses.filter(status => status !== 'S/Apontamento');
+        }
+        return statuses;
+    }, [processosLista, permission]);
+
+    const toggleStatus = (status) => {
+        if (permission === 'A' && status === 'S/Apontamento') {
+            return;
+        }
+        setSelectedStatuses(prevSelected => {
+            if (prevSelected.includes(status)) {
+                return prevSelected.filter(s => s !== status);
+            } else {
+                return [...prevSelected, status];
+            }
+        });
+    };
 
     const statusToModalMap = {
         'Não Iniciado': 'NaoIniciado',
@@ -177,6 +191,11 @@ const ProcessosContent = () => {
     const openModal = (modalType, process) => {
         setModalVisible(modalType);
         setSelectedProcess(process);
+        setModalValues({
+            numeroOrdem: dados.ordem.numero_ordem,
+            lote: dados.ordem.lote,
+            processo: process.processo,
+        });
     };
 
     const processoAtual = processosLista.find(processo =>
@@ -188,26 +207,16 @@ const ProcessosContent = () => {
         setSelectedProcess(null);
     };
 
-    const handleFilterChange = (status) => {
-        setSelectedFilter(status);
-    };
-
-
-
-    const availableStatuses = useMemo(() => {
-        const statuses = getUniqueStatuses(processosLista);
-        return ['Todos', ...statuses];
-    }, [processosLista]);
-
-    const filteredProcessos = processosLista.filter((processo) => {
-        if (selectedFilter === 'Todos') {
-            return true;
-        }
-        return processo.status === selectedFilter;
+    const filteredProcessos = processosLista.filter(processo => {
+        return selectedStatuses.includes(processo.status);
     });
 
     const renderItem = useCallback(({ item }) => {
         if (!(item.detalhes || item.acessorios?.length > 0 || item.componentes?.length > 0)) {
+            return null;
+        }
+
+        if (permission === 'A' && item.status === 'S/Apontamento') {
             return null;
         }
 
@@ -263,19 +272,17 @@ const ProcessosContent = () => {
                         </View>
                     </View>
                     <View style={styles.itemTags}>
-                        {item.detalhes && (
-                            <Text style={[styles.itemTag, styles.detailTag]}>Detalhes</Text>
-                        )}
-                        {item.acessorios && item.acessorios.length > 0 && (
-                            <Text style={[styles.itemTag, styles.accessoryTag]}>Acessórios</Text>
-                        )}
-                        {item.componentes && item.componentes.length > 0 && (
-                            <Text style={[styles.itemTag, styles.componentTag]}>Componentes</Text>
-                        )}
+                        <Text style={[styles.itemTag, styles.detailTag]}>Ver mais</Text>
                     </View>
                     <View style={styles.actionButtons}>
-                        <Pressable style={[styles.statusButton, { borderColor: color }]}
-                            onPress={() => modalType && openModal(modalType, item)}>
+                        <Pressable
+                            style={[styles.statusButton, { borderColor: color }]}
+                            onPress={() => {
+                                if (modalType) {
+                                    openModal(modalType, item);
+                                }
+                            }}
+                        >
                             {icon && (
                                 <MaterialCommunityIcons name={icon} size={24} color={color} />
                             )}
@@ -285,6 +292,7 @@ const ProcessosContent = () => {
                         </Pressable>
                     </View>
                 </Pressable>
+
                 {isExpanded && (
                     <ExpandedContent
                         item={item}
@@ -297,7 +305,7 @@ const ProcessosContent = () => {
                 )}
             </View>
         );
-    }, [expandedItemId, currentPage, selectedFilter]);
+    }, [expandedItemId, currentPage, modalVisible, selectedStatuses, permission]);
 
     if (isLoading) {
         return (
@@ -319,12 +327,60 @@ const ProcessosContent = () => {
         <View style={globalStyles.container}>
             <View style={globalStyles.header}>
                 <Text style={globalStyles.headerTitle}>Processos</Text>
+                <TouchableOpacity
+                    style={styles.filterButton}
+                    onPress={() => setIsFilterVisible(true)}
+                >
+                    <MaterialCommunityIcons name="filter-outline" size={24} color={colors.white} />
+                    <Text style={styles.filterButtonText}>Filtrar</Text>
+                </TouchableOpacity>
             </View>
-            <FilterButtons
-                availableStatuses={availableStatuses}
-                selectedFilter={selectedFilter}
-                onFilterChange={handleFilterChange}
-            />
+
+            <Modal
+                transparent={true}
+                visible={isFilterVisible}
+                onRequestClose={() => setIsFilterVisible(false)}
+                animationType="slide"
+            >
+                <View style={styles.modalContainer}>
+                    <View style={styles.modalContent}>
+                        <View style={styles.modalHeader}>
+                            <Text style={styles.modalTitle}>Filtrar por Status</Text>
+                            <Pressable
+                                style={styles.closeButton}
+                                onPress={() => setIsFilterVisible(false)}
+                            >
+                                <MaterialCommunityIcons name="close" size={28} color={colors.dark} />
+                            </Pressable>
+                        </View>
+                        {availableStatuses.map(status => (
+                            <Pressable
+                                key={status}
+                                style={styles.checkboxWrapper}
+                                onPress={() => toggleStatus(status)}
+                            >
+                                <View style={[
+                                    styles.checkbox,
+                                    selectedStatuses.includes(status) && styles.checkboxChecked
+                                ]}>
+                                    {selectedStatuses.includes(status) && (
+                                        <MaterialCommunityIcons
+                                            name="check"
+                                            size={16}
+                                            color={colors.white}
+                                            style={styles.checkboxIcon}
+                                        />
+                                    )}
+                                </View>
+                                <Text style={styles.checkboxLabel}>
+                                    {statusConfigFilter[status]?.text || status}
+                                </Text>
+                            </Pressable>
+                        ))}
+                    </View>
+                </View>
+            </Modal>
+
             {filteredProcessos.length > 0 ? (
                 <FlatList
                     data={filteredProcessos}
@@ -337,22 +393,30 @@ const ProcessosContent = () => {
                     <Text style={styles.loadingText}>Nenhum processo disponível</Text>
                 </View>
             )}
-            {modalVisible === 'NaoIniciado' && (
+            {modalVisible === 'NaoIniciado' && selectedProcess && (
                 <ModalNaoIniciado
                     visible={modalVisible === 'NaoIniciado'}
                     onClose={closeModal}
-                    postos={processoAtual ? processoAtual.postos_possiveis : []}
-                    acao={processoAtual ? processoAtual.acao : ''}
+                    postos={selectedProcess.postos_possiveis || []}
+                    acao={selectedProcess.acao || ''}
+                    numeroOrdem={modalValues.numeroOrdem}
+                    lote={modalValues.lote}
+                    processo={modalValues.processo}
+
                 />
             )}
-            {modalVisible === 'Produzindo' && (
+            {modalVisible === 'Produzindo' && selectedProcess && (
                 <ModalProduzindo
                     visible={modalVisible === 'Produzindo'}
                     onClose={closeModal}
-                    postos={processoAtual ? processoAtual.postos_possiveis : []}
-                    acao={processoAtual ? processoAtual.acao : ''}
+                    postos={selectedProcess.postos_possiveis || []}
+                    acao={selectedProcess.acao || ''}
+                    numeroOrdem={modalValues.numeroOrdem}
+                    lote={modalValues.lote}
+                    processo={modalValues.processo}
                 />
             )}
+
         </View>
     );
 };
@@ -498,41 +562,106 @@ const styles = StyleSheet.create({
     componentTag: {
         backgroundColor: '#fce4ec',
     },
+    filterTitle: {
+        flex: 1,
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
     filterContainer: {
-        flexDirection: 'row',
-        justifyContent: 'flex-start',
-        marginBottom: 15,
+        position: 'relative',
     },
     filterButton: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingVertical: 10,
-        paddingHorizontal: 16,
-        borderRadius: 25,
-        borderWidth: 1,
-        borderColor: colors.grey,
-        backgroundColor: colors.white,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 3 },
-        shadowOpacity: 0.2,
-        shadowRadius: 4,
-        elevation: 5,
-        marginHorizontal: 5,
-        transition: 'background-color 0.3s ease',
-    },
-    filterButtonActive: {
         backgroundColor: colors.primary,
-        borderColor: colors.primary,
-        shadowColor: colors.primary,
-        shadowOffset: { width: 0, height: 5 },
-        shadowOpacity: 0.3,
-        shadowRadius: 6,
-        elevation: 6,
+        borderRadius: 20,
+        paddingHorizontal: 15,
+        paddingVertical: 10,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 10,
+        elevation: 5,
+        marginLeft: 10,
     },
     filterButtonText: {
-        fontSize: 14,
         marginLeft: 8,
+        fontSize: 16,
+        color: colors.white,
+        fontWeight: '500',
+    },
+    modalContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    },
+    modalContent: {
+        backgroundColor: colors.white,
+        borderRadius: 12,
+        padding: 20,
+        width: '70%',
+        maxHeight: '80%',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 12,
+        elevation: 8,
+    },
+    modalHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: 15,
+    },
+    modalTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: colors.dark,
+    },
+    closeButton: {
+        padding: 5,
+    },
+    checkboxWrapper: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginVertical: 12, // Ajustado o espaçamento vertical entre as opções
+    },
+    checkbox: {
+        width: 24,
+        height: 24,
+        borderRadius: 5,
+        borderWidth: 2, // Adicionando largura na borda
+        borderColor: colors.grey, // Cor da borda padrão
+        backgroundColor: colors.white,
+        marginRight: 12,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    checkboxChecked: {
+        backgroundColor: colors.primary,
+        borderColor: colors.primary, // Cor da borda quando selecionado
+    },
+    checkboxIcon: {
+        position: 'absolute',
+    },
+    checkboxLabel: {
+        fontSize: 16,
+        color: colors.dark,
+    },
+    applyButton: {
+        marginTop: 20,
+        backgroundColor: colors.primary,
+        borderRadius: 8,
+        paddingVertical: 12,
+        alignItems: 'center',
+    },
+    applyButtonText: {
+        color: colors.white,
+        fontSize: 16,
+        fontWeight: 'bold',
     },
 });
+
 
 export default Processos;

@@ -4,7 +4,7 @@ import { Dimensions, StyleSheet, Text, View } from 'react-native';
 import Pdf from 'react-native-pdf';
 
 export default function OFVirtual() {
-  const source = { uri: 'http://10.0.0.197/pdfs/10252A.pdf', cache: true };
+  const source = { uri: 'http://10.0.0.190/pdfs/10252A.pdf', cache: true };
 
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(null);

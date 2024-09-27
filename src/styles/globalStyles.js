@@ -27,6 +27,9 @@ const globalStyles = StyleSheet.create({
     },
     header: {
         marginBottom: 15,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
     },
     headerTitle: {
         fontSize: 24,

@@ -28,6 +28,10 @@ const TextoList = () => {
         setPalavraChave(scannedCode);
     };
 
+    const clearSearch = () => {
+        setPalavraChave('');
+    };
+
     const renderItem = ({ item }) => (
         <TouchableOpacity
             style={styles.itemContainer}
@@ -53,6 +57,9 @@ const TextoList = () => {
                             value={palavraChave}
                             onChangeText={(text) => setPalavraChave(text)}
                         />
+                        <TouchableOpacity onPress={clearSearch}>
+                            <MaterialCommunityIcons name="close-circle" size={20} color="#999" />
+                        </TouchableOpacity>
                     </View>
                     <TouchableOpacity
                         style={styles.scanButton}

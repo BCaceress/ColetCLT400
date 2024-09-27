@@ -11,7 +11,6 @@ import {
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import api from '../../services/api';
 
-// Memoize item rendering to avoid unnecessary re-renders
 const ListItem = React.memo(({ item, getStatusColor, navigation }) => (
   <View style={styles.itemWrapper}>
     <View style={[styles.colorBar, { backgroundColor: getStatusColor(item.status) }]} />

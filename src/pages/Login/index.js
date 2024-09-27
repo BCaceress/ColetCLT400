@@ -50,10 +50,8 @@ const useLogin = (usuario, senha, setErrorMessage) => {
         setErrorMessage('');
         await AsyncStorage.setItem('@MyApp:permissao', response.data.permissao);
         navigation.navigate('Dashboard', { usuario: response.data.usuario });
-      } else if (response.status === 401) {
-        setErrorMessage('Usuário ou senha incorretos.');
       } else {
-        setErrorMessage('Erro ao fazer login. Tente novamente.');
+        setErrorMessage('Usuário ou senha incorretos.');
       }
     } catch (error) {
       setErrorMessage('Erro ao se conectar à API. Verifique sua conexão de rede.');
@@ -152,6 +150,7 @@ const Login = ({ navigation }) => {
             />
             <Text style={styles.switchLabel}>Usuário Compartilhado</Text>
           </View>
+          {errorMessage ? <Text style={styles.errorMessage}>{errorMessage}</Text> : null}
           <TouchableOpacity
             style={[styles.button, !acessoApp && styles.disabledButton]}
             onPress={() => acessoLogin(navigation)}
@@ -294,6 +293,12 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  errorMessage: {
+    color: '#FF0000',
+    fontSize: 14,
+    textAlign: 'center',
+    marginBottom: 15,
   },
 });
 

@@ -1,11 +1,115 @@
 import { Picker } from '@react-native-picker/picker';
-import React, { useState } from 'react';
+import debounce from 'lodash.debounce';
+import React, { useEffect, useState } from 'react';
 import { Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useDados } from '../contexts/DadosContext';
+import api from '../services/api';
 
-export const ModalNaoIniciado = ({ visible, onClose, postos, acao, onConfirm }) => {
+export const ModalNaoIniciado = ({ visible, onClose, postos, acao, numeroOrdem, lote, processo }) => {
     const [selectedPosto, setSelectedPosto] = useState('');
     const [operadorCodigo, setOperadorCodigo] = useState('');
+    const [operadorStatus, setOperadorStatus] = useState('');
+    const [errorMessage, setErrorMessage] = useState('');
+    const [operadores, setOperadores] = useState([]);
+    const { atualizarDados } = useDados();
+
+    useEffect(() => {
+        if (postos && postos.length > 0) {
+            setSelectedPosto(postos[0].codigo_posto);
+        }
+    }, [postos]);
+
+    const checkOperadorStatus = async (codOperador) => {
+        if (!codOperador) {
+            setOperadorStatus('');
+            setErrorMessage('');
+            return;
+        }
+
+        try {
+            const apiInstance = await api();
+            const response = await apiInstance.get(`/operadores?evento=20&codOperador=${codOperador}`);
+            const data = await response.data;
+
+            setOperadorStatus('');
+            setErrorMessage('');
+
+            if (Array.isArray(data) && data.length > 0) {
+                const operadorData = data[0];
+
+                if (operadorData.erro) {
+                    setErrorMessage(operadorData.erro);
+                } else if (operadorData.status === "Operador Inativo!") {
+                    setErrorMessage(operadorData.status);
+                } else if (operadorData.status === "") {
+                    setOperadorStatus(operadorData.nome_operador);
+                } else {
+                    setOperadorStatus('Status não reconhecido');
+                }
+            } else {
+                setErrorMessage('Resposta inválida do servidor.');
+            }
+        } catch (error) {
+            setOperadorStatus('');
+            setErrorMessage(error.message || 'Erro ao verificar o operador.');
+        }
+    };
+
+    const debouncedCheckOperadorStatus = debounce(checkOperadorStatus, 300);
+
+    useEffect(() => {
+        debouncedCheckOperadorStatus(operadorCodigo);
+        return () => {
+            debouncedCheckOperadorStatus.cancel();
+        };
+    }, [operadorCodigo]);
+
+    const isButtonDisabled = operadores.length === 0 || operadores === '' || errorMessage !== '';
+
+    const handleAddOperador = () => {
+        if (operadorCodigo && operadorStatus && !operadores.some(op => op.codigo === operadorCodigo)) {
+            setOperadores([...operadores, { codigo: operadorCodigo, nome: operadorStatus }]);
+            setOperadorCodigo('');
+            setOperadorStatus('');
+            setErrorMessage('');
+        }
+    };
+
+    const handleConfirm = async () => {
+        const payload = {
+            evento: {
+                evento: "20",
+                numeroOrdem: numeroOrdem,
+                processo: processo,
+                acao: acao,
+                lote: lote,
+                posto: selectedPosto,
+            },
+            operadores: operadores.map(operador => ({ operador: operador.codigo })),
+        };
+
+        try {
+            const apiInstance = await api();
+            const response = await apiInstance.post('/confirmacao?evento=20', payload);
+            console.log(payload);
+            if (response.status === 200) {
+                alert('Início de produção realizado com sucesso!');
+                await atualizarDados();
+                onClose();
+            } else {
+                alert(`Erro: ${response.data.message || 'Erro ao realizar a confirmação.'}`);
+            }
+        } catch (error) {
+            if (error.response) {
+                alert(`Erro: ${error.response.data.message || 'Erro inesperado do servidor.'}`);
+            } else if (error.request) {
+                alert('Erro: Nenhuma resposta recebida do servidor.');
+            } else {
+                alert(`Erro: ${error.message || 'Erro ao realizar a confirmação.'}`);
+            }
+        }
+    };
 
     return (
         <Modal
@@ -24,12 +128,13 @@ export const ModalNaoIniciado = ({ visible, onClose, postos, acao, onConfirm }) 
                     <Text style={styles.modalText}>Ação: {acao}</Text>
 
                     <Text style={styles.label}>Posto</Text>
-                    <View style={styles.pickerContainer}>
+                    <TouchableOpacity style={styles.pickerWithIcon}>
                         <Picker
                             selectedValue={selectedPosto}
                             onValueChange={(itemValue) => setSelectedPosto(itemValue)}
                             style={styles.picker}
                             itemStyle={styles.pickerItem}
+                            dropdownIconColor="transparent"
                         >
                             {postos && postos.length > 0 ? (
                                 postos.map(posto => (
@@ -43,141 +148,43 @@ export const ModalNaoIniciado = ({ visible, onClose, postos, acao, onConfirm }) 
                                 <Picker.Item label="Nenhum posto disponível" value="" />
                             )}
                         </Picker>
-                    </View>
+                    </TouchableOpacity>
 
                     <Text style={styles.label}>Código do Operador</Text>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Código do Operador"
-                        value={operadorCodigo}
-                        onChangeText={setOperadorCodigo}
-                        placeholderTextColor="#666"
-                    />
-
-                    <TouchableOpacity
-                        style={styles.confirmButton}
-                        onPress={() => onConfirm(selectedPosto, operadorCodigo)}
-                    >
-                        <Text style={styles.buttonText}>Confirmar</Text>
-                    </TouchableOpacity>
-                </View>
-            </View>
-        </Modal>
-    );
-};
-
-export const ModalProduzindo = ({ visible, onClose, postos, acao, onConfirm }) => {
-    const [selectedPosto, setSelectedPosto] = useState('');
-    const [operadorCodigo, setOperadorCodigo] = useState('');
-    const [quantidadeProduzida, setQuantidadeProduzida] = useState('');
-    const [showQuebraInput, setShowQuebraInput] = useState(false);
-    const [motivoQuebra, setMotivoQuebra] = useState('');
-    const [quantidadeQuebra, setQuantidadeQuebra] = useState('');
-    const [selectedAction, setSelectedAction] = useState(null);
-
-    return (
-        <Modal
-            transparent={true}
-            visible={visible}
-            onRequestClose={onClose}
-        >
-            <View style={styles.modalOverlay}>
-                <View style={styles.modalContent}>
-                    <View style={styles.modalHeader}>
-                        <Text style={styles.modalTitle}>Produzindo</Text>
-                        <TouchableOpacity onPress={onClose}>
-                            <MaterialCommunityIcons name="close-thick" size={30} color="#666" />
+                    <View style={styles.inputContainer}>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Código do Operador"
+                            value={operadorCodigo}
+                            onChangeText={(text) => {
+                                const numericText = text.replace(/[^0-9]/g, '');
+                                setOperadorCodigo(numericText);
+                            }}
+                            placeholderTextColor="#666"
+                            keyboardType="numeric"
+                        />
+                        <TouchableOpacity onPress={handleAddOperador} style={styles.addButton}>
+                            <MaterialCommunityIcons name="account-plus" size={24} color="#fff" />
                         </TouchableOpacity>
                     </View>
-                    <Text style={styles.modalText}>Ação: {acao}</Text>
-
-                    <Text style={styles.label}>Posto</Text>
-                    <View style={styles.pickerContainer}>
-                        <Picker
-                            selectedValue={selectedPosto}
-                            onValueChange={(itemValue) => setSelectedPosto(itemValue)}
-                            style={styles.picker}
-                            itemStyle={styles.pickerItem}
-                        >
-                            {postos && postos.length > 0 ? (
-                                postos.map(posto => (
-                                    <Picker.Item
-                                        key={posto.codigo_posto}
-                                        label={posto.descricao}
-                                        value={posto.codigo_posto}
-                                    />
-                                ))
-                            ) : (
-                                <Picker.Item label="Nenhum posto disponível" value="" />
-                            )}
-                        </Picker>
-                    </View>
-
-                    <Text style={styles.label}>Código do Operador</Text>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Código do Operador"
-                        value={operadorCodigo}
-                        onChangeText={setOperadorCodigo}
-                        placeholderTextColor="#666"
-                    />
-
-                    <Text style={styles.label}>Quantidade Produzida</Text>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Quantidade Produzida"
-                        value={quantidadeProduzida}
-                        onChangeText={setQuantidadeProduzida}
-                        placeholderTextColor="#666"
-                        keyboardType="numeric"
-                    />
-
-                    {showQuebraInput && (
-                        <>
-                            <Text style={styles.label}>Motivo da Quebra</Text>
-                            <TextInput
-                                style={styles.input}
-                                placeholder="Motivo da Quebra"
-                                value={motivoQuebra}
-                                onChangeText={setMotivoQuebra}
-                                placeholderTextColor="#666"
-                            />
-                            <Text style={styles.label}>Quantidade de Quebra</Text>
-                            <TextInput
-                                style={styles.input}
-                                placeholder="Quantidade de Quebra"
-                                value={quantidadeQuebra}
-                                onChangeText={setQuantidadeQuebra}
-                                placeholderTextColor="#666"
-                                keyboardType="numeric"
-                            />
-                        </>
+                    {errorMessage ? (
+                        <Text style={styles.errorText}>{errorMessage}</Text>
+                    ) : (
+                        <Text style={styles.successText}>{operadorStatus}</Text>
                     )}
 
-                    <View style={styles.actionContainer}>
-                        <ActionButton
-                            title="Pause"
-                            icon="pause"
-                            isSelected={selectedAction === 'Pause'}
-                            onPress={() => setSelectedAction('Pause')}
-                        />
-                        <ActionButton
-                            title="Stop"
-                            icon="stop"
-                            isSelected={selectedAction === 'Stop'}
-                            onPress={() => setSelectedAction('Stop')}
-                        />
+                    <View style={styles.operadoresList}>
+                        {operadores.map((operador, index) => (
+                            <Text key={index} style={styles.operadorItem}>
+                                {operador.codigo} - {operador.nome}
+                            </Text>
+                        ))}
                     </View>
 
                     <TouchableOpacity
-                        style={styles.confirmButton}
-                        onPress={() => {
-                            if (!selectedAction) {
-                                alert('Você deve selecionar uma ação!');
-                                return;
-                            }
-                            onConfirm(selectedPosto, operadorCodigo, quantidadeProduzida, motivoQuebra, quantidadeQuebra, selectedAction);
-                        }}
+                        style={[styles.confirmButton, isButtonDisabled && styles.confirmButtonDisabled]}
+                        onPress={handleConfirm}
+                        disabled={isButtonDisabled}
                     >
                         <Text style={styles.buttonText}>Confirmar</Text>
                     </TouchableOpacity>
@@ -186,18 +193,6 @@ export const ModalProduzindo = ({ visible, onClose, postos, acao, onConfirm }) =
         </Modal>
     );
 };
-
-const ActionButton = ({ title, icon, isSelected, onPress }) => (
-    <TouchableOpacity
-        style={[styles.actionButton, isSelected && styles.actionButtonSelected]}
-        onPress={onPress}
-    >
-        <MaterialCommunityIcons name={icon} size={32} color={isSelected ? '#09A08D' : '#666'} />
-        <Text style={[styles.actionText, isSelected && styles.actionTextSelected]}>
-            {title}
-        </Text>
-    </TouchableOpacity>
-);
 
 const styles = StyleSheet.create({
     modalOverlay: {
@@ -242,60 +237,51 @@ const styles = StyleSheet.create({
         color: '#333',
         marginBottom: 8,
     },
-    input: {
-        width: '100%',
-        padding: 12,
-        borderColor: '#E0E0E0',
+    pickerWithIcon: {
+        flexDirection: 'row',
+        alignItems: 'center',
         borderWidth: 1,
-        borderRadius: 10,
-        marginBottom: 16,
-        color: '#333',
-        fontSize: 16,
-    },
-    pickerContainer: {
-        width: '100%',
         borderColor: '#E0E0E0',
-        borderWidth: 1,
         borderRadius: 10,
-        overflow: 'hidden',
         marginBottom: 16,
     },
     picker: {
-        width: '100%',
+        flex: 1,
         height: 50,
         color: '#333',
     },
-    pickerItem: {
-        color: '#333',
-    },
-    actionContainer: {
+    inputContainer: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginBottom: 20,
-    },
-    actionButton: {
-        flexDirection: 'column',
         alignItems: 'center',
-        justifyContent: 'center',
+        marginBottom: 16,
+    },
+    input: {
+        flex: 1,
         padding: 12,
         borderColor: '#E0E0E0',
         borderWidth: 1,
-        borderRadius: 12,
-        width: '45%',
-        height: 100,
-        backgroundColor: '#fff',
-    },
-    actionButtonSelected: {
-        borderColor: '#09A08D',
-        backgroundColor: '#E8F6F3',
-    },
-    actionText: {
-        marginTop: 8,
-        color: '#666',
+        borderRadius: 10,
+        color: '#333',
         fontSize: 16,
     },
-    actionTextSelected: {
-        color: '#09A08D',
+    addButton: {
+        backgroundColor: '#09A08D',
+        padding: 12,
+        borderRadius: 8,
+        marginLeft: 18,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    addButtonText: {
+        color: '#fff',
+        fontWeight: 'bold',
+    },
+    operadoresList: {
+        marginBottom: 18,
+    },
+    operadorItem: {
+        color: '#333',
+        marginBottom: 5,
     },
     confirmButton: {
         backgroundColor: '#09A08D',
@@ -304,9 +290,20 @@ const styles = StyleSheet.create({
         width: '100%',
         alignItems: 'center',
     },
+    confirmButtonDisabled: {
+        backgroundColor: '#B0B0B0',
+    },
     buttonText: {
         color: '#fff',
         fontSize: 16,
         fontWeight: 'bold',
+    },
+    errorText: {
+        color: 'red',
+        marginBottom: 18,
+    },
+    successText: {
+        color: 'green',
+        marginBottom: 18,
     },
 });
